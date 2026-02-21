@@ -10,6 +10,8 @@ const explanationSchema = new mongoose.Schema({
 
 const loginEventSchema = new mongoose.Schema({
   userId: { type: String, required: true, index: true },
+  displayName: { type: String, default: null },
+  email: { type: String, default: null },
   timestamp: { type: Date, required: true, index: true },
   region: { type: String, required: true },
   deviceId: { type: String, required: true },

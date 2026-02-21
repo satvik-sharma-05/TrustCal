@@ -37,14 +37,34 @@ router.get('/events', async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 50;
     const skip = (page - 1) * limit;
+    const searchRaw = (req.query.search || '').trim();
+    const decisionFilter = req.query.decision;
 
-    const events = await LoginEvent.find()
+    const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const search = searchRaw ? escapeRegex(searchRaw) : '';
+
+    let query = {};
+    if (search) {
+      const re = new RegExp(search, 'i');
+      query.$or = [
+        { userId: re },
+        { displayName: re },
+        { email: re },
+        { region: re },
+        { deviceType: re },
+      ];
+    }
+    if (decisionFilter && ['allow', 'mfa', 'block'].includes(decisionFilter)) {
+      query.decision = decisionFilter;
+    }
+
+    const events = await LoginEvent.find(query)
       .sort({ createdAt: -1 })
       .limit(limit)
       .skip(skip)
       .lean();
 
-    const total = await LoginEvent.countDocuments();
+    const total = await LoginEvent.countDocuments(query);
 
     res.json({
       events,

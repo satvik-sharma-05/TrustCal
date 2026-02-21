@@ -90,8 +90,14 @@ class EvaluationService {
       const isNewUser = Boolean(rawEvent.isNewUser);
 
       const baseline = await BaselineEngine.getUserProfile(userId);
+      const displayName = rawEvent.displayName != null && String(rawEvent.displayName).trim() !== ''
+        ? String(rawEvent.displayName).trim() : null;
+      const email = rawEvent.email != null && String(rawEvent.email).trim() !== ''
+        ? String(rawEvent.email).trim() : null;
       const event = {
         userId,
+        displayName,
+        email,
         timestamp: new Date(rawEvent.timestamp || Date.now()),
         region,
         deviceId,
@@ -133,12 +139,18 @@ class EvaluationService {
       try {
         const socketService = require('./socket');
         socketService.emitEvent('new_login', {
-          userId: userIdGenerated,
+          _id: loginEvent._id,
+          userId,
+          displayName: displayName || undefined,
+          email: email || undefined,
           riskScore,
           anomalyScore,
           decision,
           timestamp: event.timestamp,
+          createdAt: loginEvent.createdAt,
           region,
+          deviceType: event.deviceType,
+          userType: event.userType,
           explanation: explanation.summary,
           topFeatures: mlResult.top_contributing_features,
         });

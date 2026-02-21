@@ -14,10 +14,11 @@ export const evaluateLogin = async (eventData) => {
   return response.data;
 };
 
-export const getEvents = async (page = 1, limit = 50) => {
-  const response = await api.get('/events', {
-    params: { page, limit },
-  });
+export const getEvents = async (page = 1, limit = 50, search = '', decision = '') => {
+  const params = { page, limit };
+  if (search) params.search = search;
+  if (decision) params.decision = decision;
+  const response = await api.get('/events', { params });
   return response.data;
 };
 
