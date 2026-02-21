@@ -22,9 +22,9 @@ const ResultsGauge = ({ riskScore = 0, decision = 'allow', stats }) => {
   const strokeDashoffset = halfCircumference - (riskScore / 100) * halfCircumference;
 
   const getColors = () => {
-    if (riskScore <= 30) return { primary: '#10b981', glow: 'rgba(16,185,129,0.4)', label: 'Low risk' };
-    if (riskScore <= 70) return { primary: '#f59e0b', glow: 'rgba(245,158,11,0.4)', label: 'Medium risk' };
-    return { primary: '#ef4444', glow: 'rgba(239,68,68,0.4)', label: 'High risk' };
+    if (riskScore <= 30) return { primary: '#a1a1aa', glow: 'rgba(161,161,170,0.25)', label: 'Low risk' };
+    if (riskScore <= 70) return { primary: '#d4d4d8', glow: 'rgba(212,212,216,0.25)', label: 'Medium risk' };
+    return { primary: '#fafafa', glow: 'rgba(250,250,250,0.2)', label: 'High risk' };
   };
 
   const colors = getColors();
@@ -47,7 +47,7 @@ const ResultsGauge = ({ riskScore = 0, decision = 'allow', stats }) => {
   ) : null;
 
   return (
-    <div className="relative overflow-visible rounded-2xl border border-white/10 bg-gradient-to-b from-[rgba(26,21,37,0.9)] to-[rgba(15,12,24,0.95)] backdrop-blur-xl p-6 shadow-[0_0_60px_-15px_rgba(139,92,246,0.2),inset_0_1px_0_rgba(255,255,255,0.06)] animate-fade-in">
+    <div className="relative overflow-visible rounded-2xl border border-zinc-600/40 bg-gradient-to-b from-zinc-800/70 to-zinc-900/80 backdrop-blur-xl p-6 shadow-[0_0_40px_-10px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] animate-fade-in">
       <div className="absolute inset-0 rounded-2xl overflow-hidden">
         <div
           className="absolute inset-0 opacity-20"
@@ -59,8 +59,8 @@ const ResultsGauge = ({ riskScore = 0, decision = 'allow', stats }) => {
 
       <div className="relative flex flex-col items-center">
         <div className="flex justify-between items-center w-full mb-6">
-          <h3 className="text-base font-semibold text-white flex items-center gap-2">
-            <Shield className="w-4 h-4 text-cyan-400" />
+          <h3 className="text-base font-semibold text-zinc-200 flex items-center gap-2">
+            <Shield className="w-4 h-4 text-zinc-400" />
             Results
           </h3>
           <button
@@ -69,7 +69,7 @@ const ResultsGauge = ({ riskScore = 0, decision = 'allow', stats }) => {
             onClick={() => setShowInfo(!showInfo)}
             onMouseEnter={() => setShowInfo(true)}
             onMouseLeave={() => setShowInfo(false)}
-            className="p-1.5 rounded-lg text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-600/20 transition-colors cursor-pointer"
           >
             <Info className="w-4 h-4" />
           </button>
@@ -120,23 +120,15 @@ const ResultsGauge = ({ riskScore = 0, decision = 'allow', stats }) => {
             >
               {riskScore}
             </span>
-            <span className="text-xs text-slate-500 mt-0.5">Risk score</span>
+            <span className="text-xs text-zinc-500 mt-0.5">Risk score</span>
           </div>
         </div>
 
-        <div
-          className={`mt-4 px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wider ${
-            decision === 'allow'
-              ? 'bg-emerald/20 text-emerald border border-emerald/30'
-              : decision === 'mfa'
-              ? 'bg-amber/20 text-amber border border-amber/30'
-              : 'bg-crimson/20 text-crimson border border-crimson/30'
-          }`}
-        >
+        <div className="mt-4 px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wider bg-zinc-700/40 text-zinc-300 border border-zinc-500/40">
           {decision}
         </div>
 
-        <p className="text-xs text-slate-500 mt-4 text-center">
+        <p className="text-xs text-zinc-500 mt-4 text-center">
           {totalEvents} total events • ML model
         </p>
       </div>

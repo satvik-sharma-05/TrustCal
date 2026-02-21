@@ -2,15 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Share+Tech+Mono&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
   --navy-base: #0d0a14;
   --navy-deep: #0f0c18;
   --navy-mid: #1a1525;
   --navy-light: #252035;
-  --glass-primary: rgba(26, 21, 37, 0.65);
-  --glass-primary-border: rgba(255, 255, 255, 0.08);
+  --glass-primary: rgba(15, 12, 24, 0.85);
+  --glass-primary-border: rgba(255, 255, 255, 0.1);
   --glass-secondary: rgba(15, 12, 24, 0.85);
   --glass-pill: rgba(0, 0, 0, 0.35);
   --glass-blur: 24px;
@@ -26,6 +26,39 @@
   --emboss-shadow: rgba(0, 0, 0, 0.4);
   --recess-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.3);
   --gloss: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 50%);
+  /* Metallic / robotic theme */
+  --metal-light: #a1a1aa;
+  --metal-border: rgba(161, 161, 170, 0.25);
+  --metal-panel: rgba(24, 24, 27, 0.45);
+}
+
+.robotic-theme {
+  --glass-primary: rgba(39, 39, 42, 0.6);
+  --glass-primary-border: rgba(161, 161, 170, 0.2);
+}
+
+.dashboard-panel {
+  background: linear-gradient(180deg, var(--metal-panel) 0%, rgba(9, 9, 11, 0.5) 100%);
+  border-top: 1px solid var(--metal-border);
+  box-shadow: 0 -4px 40px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.dashboard-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(161, 161, 170, 0.3), transparent);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.robotic-theme .font-display,
+.robotic-theme h1, .robotic-theme h2, .robotic-theme h3 {
+  font-family: 'Orbitron', 'Share Tech Mono', system-ui, sans-serif;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -56,16 +89,16 @@ body {
   background-size: 180px 180px;
 }
 
-/* Glass with gloss overlay */
+/* Glass - transparent for robot visibility, metallic border */
 .glass-card {
   background: var(--glass-primary);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--glass-primary-border);
   border-radius: 14px;
   box-shadow:
-    0 1px 0 var(--emboss-highlight) inset,
-    0 4px 20px var(--emboss-shadow);
+    0 1px 0 rgba(255,255,255,0.05) inset,
+    0 4px 24px rgba(0, 0, 0, 0.25);
   position: relative;
   overflow: hidden;
 }
@@ -81,8 +114,9 @@ body {
 
 .glass-card:hover {
   box-shadow:
-    0 2px 0 var(--emboss-highlight) inset,
-    0 8px 32px rgba(0, 0, 0, 0.5);
+    0 2px 0 rgba(255,255,255,0.06) inset,
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(161, 161, 170, 0.1);
 }
 
 .glass-secondary {
@@ -109,8 +143,8 @@ body {
 
 .recessed-input:focus {
   outline: none;
-  border-color: var(--purple);
-  box-shadow: 0 0 0 2px var(--purple-soft);
+  border-color: rgba(161, 161, 170, 0.5);
+  box-shadow: 0 0 0 2px rgba(161, 161, 170, 0.15);
 }
 
 /* Embossed button */
@@ -128,9 +162,10 @@ body {
 .label-upper {
   font-size: 0.7rem;
   font-weight: 500;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #64748b;
+  color: var(--metal-light);
+  font-family: 'Share Tech Mono', 'JetBrains Mono', monospace;
 }
 
 .font-mono { font-family: 'JetBrains Mono', monospace; }

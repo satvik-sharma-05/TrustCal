@@ -136,8 +136,10 @@ router.get('/ml/status', async (req, res) => {
   try {
     const modelLoaded = await mlClient.healthCheck();
     const metadata = await mlClient.getMetadata();
+    const confidence = metadata?.model_confidence ?? metadata?.f1 ?? null;
     res.json({
       modelLoaded,
+      confidence: confidence != null ? (confidence <= 1 ? Math.round(confidence * 100) : confidence) : null,
       mlServerUrl: process.env.ML_SERVER_URL || 'http://127.0.0.1:5001',
       modelVersion: metadata?.modelVersion || null,
     });

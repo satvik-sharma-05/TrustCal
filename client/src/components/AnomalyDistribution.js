@@ -7,10 +7,10 @@ const ANOMALY_EXPLANATION = 'Distribution of anomaly scores across events. Peaks
 const AnomalyDistribution = ({ events = [] }) => {
   if (!events?.length) {
     return (
-      <div className="glass-card p-6">
+      <div className="rounded-xl border border-white/10 bg-zinc-900/80 backdrop-blur-xl p-6">
         <h3 className="text-base font-semibold text-white mb-4">Anomaly Distribution</h3>
         <div className="h-64 flex items-center justify-center">
-          <span className="text-slate-500 text-sm">No data</span>
+          <span className="text-zinc-500 text-sm">No data</span>
         </div>
       </div>
     );
@@ -26,22 +26,22 @@ const AnomalyDistribution = ({ events = [] }) => {
   });
 
   return (
-    <div className="glass-card p-4 sm:p-6 animate-fade-in">
+    <div className="rounded-xl border border-white/10 bg-zinc-900/80 backdrop-blur-xl p-4 sm:p-6 animate-fade-in">
       <ChartWithExplanation title="Anomaly Distribution" explanation={ANOMALY_EXPLANATION}>
       <ResponsiveContainer width="100%" height={240}>
         <BarChart data={histogram}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-          <XAxis dataKey="range" stroke="#64748b" fontSize={11} />
-          <YAxis stroke="#64748b" fontSize={11} />
+          <XAxis dataKey="range" stroke="#71717a" fontSize={11} />
+          <YAxis stroke="#71717a" fontSize={11} />
           <Tooltip
             contentStyle={{
-              background: 'rgba(26, 21, 37, 0.95)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              background: 'rgba(9, 9, 11, 0.98)',
+              border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: 10,
               fontSize: 12,
             }}
           />
-          <Bar dataKey="count" fill="#ec4899" radius={[4, 4, 0, 0]} isAnimationActive animationDuration={700} animationEasing="ease-out" />
+          <Bar dataKey="count" fill="#71717a" radius={[4, 4, 0, 0]} isAnimationActive animationDuration={700} animationEasing="ease-out" />
         </BarChart>
       </ResponsiveContainer>
       </ChartWithExplanation>

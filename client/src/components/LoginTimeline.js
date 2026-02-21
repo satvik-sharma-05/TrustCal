@@ -35,13 +35,13 @@ const LoginTimeline = ({ events = [], onEventClick, selectedEvent, searchQuery, 
   const getDecisionBadge = (decision) => {
     switch (decision) {
       case 'allow':
-        return <span className="text-emerald text-sm font-medium">Allow</span>;
+        return <span className="text-zinc-300 text-sm font-medium">Allow</span>;
       case 'mfa':
-        return <span className="text-amber text-sm font-medium">MFA</span>;
+        return <span className="text-zinc-400 text-sm font-medium">MFA</span>;
       case 'block':
-        return <span className="text-crimson text-sm font-medium">Block</span>;
+        return <span className="text-zinc-200 text-sm font-medium">Block</span>;
       default:
-        return <span className="text-slate-500 text-sm">—</span>;
+        return <span className="text-zinc-500 text-sm">—</span>;
     }
   };
 
@@ -90,7 +90,7 @@ const LoginTimeline = ({ events = [], onEventClick, selectedEvent, searchQuery, 
   const hasMore = sortedEvents.length > visibleCount;
 
   return (
-    <div className="glass-card overflow-hidden animate-fade-in">
+    <div className="rounded-xl border border-white/10 bg-zinc-900/80 backdrop-blur-xl overflow-hidden animate-fade-in">
       <div className="px-4 sm:px-6 py-4 border-b border-white/5 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h3 className="text-base font-semibold text-white">Recent Activity</h3>
@@ -180,11 +180,7 @@ const LoginTimeline = ({ events = [], onEventClick, selectedEvent, searchQuery, 
                     <td className="py-3 px-4 sm:px-6 text-slate-400">{event.region || '—'}</td>
                     <td className="py-3 px-4 sm:px-6 text-slate-400 text-xs hidden md:table-cell">{event.deviceType || '—'}</td>
                     <td className="py-3 px-4 sm:px-6">
-                      <span
-                        className={`font-semibold ${
-                          risk > 70 ? 'text-crimson' : risk > 30 ? 'text-amber' : 'text-emerald'
-                        }`}
-                      >
+                      <span className="font-semibold text-zinc-300">
                         {risk}/100
                       </span>
                     </td>

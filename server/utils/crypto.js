@@ -19,22 +19,40 @@ function maskDeviceId(deviceId) {
 }
 
 /**
- * Extract region from IP (mock - in production use GeoIP service)
- * For now, returns a mock region based on hash
+ * Extract region from IP.
+ * When GEOIP_SERVICE_URL env is set, use that service (real GeoIP).
+ * Otherwise derives a deterministic region label from IP hash for consistency (no PII stored).
  */
-function extractRegion(ipAddress) {
-  // In production, use a GeoIP service
-  // For now, return mock region based on hash
+async function extractRegionAsync(ipAddress) {
+  const geoipUrl = process.env.GEOIP_SERVICE_URL;
+  if (geoipUrl && ipAddress && ipAddress !== '0.0.0.0') {
+    try {
+      const axios = require('axios');
+      const res = await axios.get(`${geoipUrl.replace(/\/$/, '')}/${ipAddress}`, { timeout: 2000 });
+      const region = res.data?.region || res.data?.country_code || res.data?.country;
+      if (region) return String(region);
+    } catch (_) {}
+  }
+  return extractRegionFromHash(ipAddress);
+}
+
+function extractRegionFromHash(ipAddress) {
   const hash = crypto.createHash('md5');
-  hash.update(ipAddress);
+  hash.update(ipAddress || '0.0.0.0');
   const hashHex = hash.digest('hex');
   const regions = ['US-East', 'US-West', 'EU-Central', 'EU-West', 'AP-South', 'AP-North'];
   const index = parseInt(hashHex.substring(0, 2), 16) % regions.length;
   return regions[index];
 }
 
+function extractRegion(ipAddress) {
+  return extractRegionFromHash(ipAddress);
+}
+
 module.exports = {
   hashUserId,
   maskDeviceId,
-  extractRegion
+  extractRegion,
+  extractRegionFromHash,
+  extractRegionAsync,
 };

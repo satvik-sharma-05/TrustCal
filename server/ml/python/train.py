@@ -116,6 +116,7 @@ def train():
 
     now = datetime.now(timezone.utc)
     training_date = now.isoformat().replace("+00:00", "Z")
+    model_confidence = round((precision + recall + f1) / 3.0, 2)
     metadata = {
         "modelVersion": f"1.0.{int(now.timestamp())}",
         "trainingDate": training_date,
@@ -132,6 +133,7 @@ def train():
         "recall": float(recall),
         "f1": float(f1),
         "roc_auc": float(auc),
+        "model_confidence": model_confidence,
         "n_train_normal": int(len(X_train)),
         "n_validation_normal": int(len(X_normal_val)),
         "n_validation_anomaly": int(len(X_attack)),

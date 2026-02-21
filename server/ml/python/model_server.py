@@ -68,8 +68,10 @@ def load_model():
     if os.path.exists(METADATA_PATH):
         with open(METADATA_PATH) as f:
             metadata = json.load(f)
+        if "model_confidence" not in metadata:
+            metadata["model_confidence"] = round(metadata.get("f1", 0.85), 2)
     else:
-        metadata = {"feature_names": FEATURE_NAMES}
+        metadata = {"feature_names": FEATURE_NAMES, "model_confidence": 0.85}
     return model, scaler
 
 

@@ -3,7 +3,7 @@ import React from 'react';
 const UserProfile = ({ profile, events = [], selectedEvent }) => {
   if (!profile) {
     return (
-      <div className="glass-card p-4 sm:p-6 animate-fade-in">
+      <div className="rounded-xl border border-white/10 bg-zinc-900/80 backdrop-blur-xl p-4 sm:p-6 animate-fade-in">
         <h3 className="text-base font-semibold text-slate-200 mb-2">User Context</h3>
         <p className="text-slate-500 text-sm">Select an event in the timeline to view user profile.</p>
       </div>
@@ -15,7 +15,7 @@ const UserProfile = ({ profile, events = [], selectedEvent }) => {
     : 0;
 
   return (
-    <div className="glass-card p-4 sm:p-6 animate-fade-in">
+    <div className="rounded-xl border border-white/10 bg-zinc-900/80 backdrop-blur-xl p-4 sm:p-6 animate-fade-in">
       <h3 className="text-base font-semibold text-slate-200 mb-4">User Profile</h3>
       <div className="space-y-4 text-sm">
         <div>

@@ -26,7 +26,7 @@ function riskToDecision(riskScore) {
   return 'block';
 }
 
-function buildExplanation(anomalyScore, riskScore, decision, topContributingFeatures) {
+function buildExplanation(anomalyScore, riskScore, decision, topContributingFeatures, modelConfidence) {
   const top3 = (topContributingFeatures || []).slice(0, 3);
   const riskFactors = top3
     .filter((f) => f.contribution > 0)
@@ -34,6 +34,9 @@ function buildExplanation(anomalyScore, riskScore, decision, topContributingFeat
   const summary =
     `Anomaly: ${(anomalyScore * 100).toFixed(1)}% → Risk: ${riskScore}/100. Decision: ${decision}. ` +
     (top3.length ? `Top features: ${top3.map((f) => f.name).join(', ')}.` : 'No feature deviations above threshold.');
+  const confidence = typeof modelConfidence === 'number' && modelConfidence >= 0 && modelConfidence <= 1
+    ? modelConfidence
+    : (typeof modelConfidence === 'number' ? modelConfidence / 100 : null);
   return {
     signals: top3.map((f) => ({
       name: f.name,
@@ -44,7 +47,7 @@ function buildExplanation(anomalyScore, riskScore, decision, topContributingFeat
     })),
     summary,
     riskFactors,
-    confidence: 0.85,
+    confidence: confidence ?? undefined,
     topContributingFeatures: top3,
   };
 }
@@ -110,15 +113,18 @@ class EvaluationService {
 
       const featureVector = getFeatureVector(event, baseline);
       const mlResult = await mlClient.predict(featureVector);
+      const metadata = await mlClient.getMetadata();
 
       const anomalyScore = mlResult.anomaly_score;
       const riskScore = mlResult.risk_score;
       const decision = riskToDecision(riskScore);
+      const modelConfidence = metadata?.model_confidence ?? metadata?.f1 ?? null;
       const explanation = buildExplanation(
         anomalyScore,
         riskScore,
         decision,
-        mlResult.top_contributing_features
+        mlResult.top_contributing_features,
+        modelConfidence
       );
 
       const loginEvent = new LoginEvent({
@@ -170,7 +176,7 @@ class EvaluationService {
             value: f.value,
             deviationScore: f.contribution,
           })),
-          modelConfidence: 0.85,
+          modelConfidence: (metadata?.model_confidence ?? metadata?.f1) ?? null,
           processingTimeMs: processingTime,
         },
       };

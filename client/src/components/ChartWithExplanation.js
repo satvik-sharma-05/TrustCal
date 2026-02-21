@@ -25,7 +25,7 @@ const ChartWithExplanation = ({ title, explanation, children, className = '' }) 
       style={{
         top: pos.top,
         left: Math.max(16, pos.left),
-        background: 'rgba(26, 21, 37, 0.98)',
+        background: 'rgba(9, 9, 11, 0.98)',
         backdropFilter: 'blur(20px)',
         border: '1px solid rgba(255,255,255,0.1)',
         boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
@@ -45,7 +45,7 @@ const ChartWithExplanation = ({ title, explanation, children, className = '' }) 
           onClick={toggleInfo}
           onMouseEnter={() => setShowInfo(true)}
           onMouseLeave={() => setShowInfo(false)}
-          className="p-1.5 rounded-lg text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors cursor-pointer"
+          className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
         >
           <Info className="w-4 h-4" />
         </button>

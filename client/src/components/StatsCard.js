@@ -4,11 +4,11 @@ import { Activity, AlertTriangle, Shield, Lock } from 'lucide-react';
 const iconMap = { total: Activity, highRisk: AlertTriangle, mfa: Shield, block: Lock, avgRisk: Activity, confidence: Shield };
 
 const colorMap = {
-  cyan: 'from-cyan-500/30 to-cyan-600/10 border-cyan-400/30 text-cyan-400',
-  crimson: 'from-crimson/30 to-red-600/10 border-crimson/40 text-crimson',
-  amber: 'from-amber-500/30 to-amber-600/10 border-amber-400/30 text-amber-400',
-  emerald: 'from-emerald-500/30 to-emerald-600/10 border-emerald-400/30 text-emerald-400',
-  purple: 'from-purple-500/30 to-purple-600/10 border-purple-400/30 text-purple-400',
+  cyan: 'from-zinc-700/60 to-zinc-800/40 border-white/10 text-zinc-200',
+  crimson: 'from-zinc-700/60 to-zinc-800/40 border-white/10 text-zinc-200',
+  amber: 'from-zinc-700/60 to-zinc-800/40 border-white/10 text-zinc-200',
+  emerald: 'from-zinc-700/60 to-zinc-800/40 border-white/10 text-zinc-200',
+  purple: 'from-zinc-700/60 to-zinc-800/40 border-white/10 text-zinc-200',
 };
 
 function useCountUp(end, duration = 800, enabled = true) {
@@ -44,14 +44,14 @@ const StatsCard = ({ title, value, subtitle, icon = 'total', color = 'purple' })
   const colorClass = colorMap[color] || colorMap.purple;
 
   return (
-    <div className="glass-card p-4 sm:p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_8px_32px_rgba(0,0,0,0.5)] group">
+    <div className="rounded-xl border border-white/10 bg-zinc-900/80 backdrop-blur-xl p-4 sm:p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-black/30 hover:border-white/15 group">
       <div className="relative z-10">
-        <div className={`inline-flex p-2 rounded-xl bg-gradient-to-br ${colorClass} mb-3 shadow-lg`}>
-          <Icon className="w-5 h-5" />
+        <div className={`inline-flex p-2 rounded-lg bg-white/5 border border-white/10 ${colorClass} mb-3`}>
+          <Icon className="w-5 h-5 text-zinc-300" />
         </div>
         <div className="text-xl sm:text-2xl font-light tracking-tight text-white">{displayValue}{suffix}</div>
-        <div className="label-upper mt-0.5">{title}</div>
-        {subtitle && <div className="text-xs text-slate-500 mt-1">{subtitle}</div>}
+        <div className="label-upper mt-0.5 text-zinc-400">{title}</div>
+        {subtitle && <div className="text-xs text-zinc-500 mt-1">{subtitle}</div>}
       </div>
     </div>
   );
