@@ -9,8 +9,10 @@ const connectDB = async () => {
 
     // Options removed: useNewUrlParser, useUnifiedTopology (deprecated in driver 4.x)
     const conn = await mongoose.connect(process.env.MONGO_URI);
+    const dbName = conn.connection.db?.databaseName || conn.connection.name || 'unknown';
 
     console.log(`MongoDB Atlas Connected: ${conn.connection.host}`);
+    console.log(`Database: ${dbName}`);
     return conn;
   } catch (error) {
     console.error('Database connection error:', error.message);

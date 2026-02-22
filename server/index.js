@@ -10,31 +10,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Database connection
-connectDB();
-
-// Sync model metadata from ML server to MongoDB (non-blocking)
-(async () => {
-  try {
-    const mlClient = require('./ml/mlClient');
-    const ModelMetadata = require('./models/ModelMetadata');
-    const loaded = await mlClient.healthCheck();
-    if (loaded) {
-      const meta = await mlClient.getMetadata();
-      if (meta) {
-        await ModelMetadata.findOneAndUpdate(
-          { modelVersion: meta.modelVersion },
-          { ...meta, updatedAt: new Date() },
-          { upsert: true, new: true }
-        );
-        // Model metadata synced
-      }
-    }
-  } catch (e) {
-    // ML server may not be running
-  }
-})();
-
 // Routes
 app.use('/api', require('./routes/api'));
 
@@ -55,10 +30,40 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.BACKEND_PORT || 5000;
-const server = app.listen(PORT, () => {
-  console.log(`TrustCal ML Backend: http://localhost:${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-});
 
-// Initialize WebSocket
-require('./services/socket').init(server);
+async function start() {
+  await connectDB();
+
+  // Sync model metadata from ML server to MongoDB (non-blocking)
+  (async () => {
+    try {
+      const mlClient = require('./ml/mlClient');
+      const ModelMetadata = require('./models/ModelMetadata');
+      const loaded = await mlClient.healthCheck();
+      if (loaded) {
+        const meta = await mlClient.getMetadata();
+        if (meta) {
+          await ModelMetadata.findOneAndUpdate(
+            { modelVersion: meta.modelVersion },
+            { ...meta, updatedAt: new Date() },
+            { upsert: true, new: true }
+          );
+        }
+      }
+    } catch (e) {
+      // ML server may not be running
+    }
+  })();
+
+  const server = app.listen(PORT, () => {
+    console.log(`TrustCal ML Backend: http://localhost:${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  });
+
+  require('./services/socket').init(server);
+}
+
+start().catch((err) => {
+  console.error('Startup failed:', err);
+  process.exit(1);
+});

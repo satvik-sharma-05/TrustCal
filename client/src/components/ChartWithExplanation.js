@@ -21,14 +21,13 @@ const ChartWithExplanation = ({ title, explanation, children, className = '' }) 
 
   const tooltipEl = showInfo ? (
     <div
-      className="fixed z-[9999] w-64 p-3 rounded-xl text-xs text-slate-300 animate-fade-in"
+      className="fixed z-[9999] w-64 p-3 rounded-xl text-xs text-zinc-300 animate-fade-in"
       style={{
         top: pos.top,
         left: Math.max(16, pos.left),
-        background: 'rgba(9, 9, 11, 0.98)',
-        backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255,255,255,0.1)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+        background: '#2c2c2c',
+        border: '1px solid rgba(34, 197, 94, 0.25)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(34, 197, 94, 0.1)',
       }}
     >
       {explanation}
@@ -45,7 +44,7 @@ const ChartWithExplanation = ({ title, explanation, children, className = '' }) 
           onClick={toggleInfo}
           onMouseEnter={() => setShowInfo(true)}
           onMouseLeave={() => setShowInfo(false)}
-          className="p-1.5 rounded-lg text-zinc-500 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+          className="p-1.5 rounded-lg text-zinc-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors cursor-pointer"
         >
           <Info className="w-4 h-4" />
         </button>

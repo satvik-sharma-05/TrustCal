@@ -22,9 +22,9 @@ const ResultsGauge = ({ riskScore = 0, decision = 'allow', stats }) => {
   const strokeDashoffset = halfCircumference - (riskScore / 100) * halfCircumference;
 
   const getColors = () => {
-    if (riskScore <= 30) return { primary: '#a1a1aa', glow: 'rgba(161,161,170,0.25)', label: 'Low risk' };
-    if (riskScore <= 70) return { primary: '#d4d4d8', glow: 'rgba(212,212,216,0.25)', label: 'Medium risk' };
-    return { primary: '#fafafa', glow: 'rgba(250,250,250,0.2)', label: 'High risk' };
+    if (riskScore <= 30) return { primary: '#22c55e', glow: 'rgba(34,197,94,0.35)', label: 'Low risk' };
+    if (riskScore <= 70) return { primary: '#f59e0b', glow: 'rgba(245,158,11,0.35)', label: 'Medium risk' };
+    return { primary: '#ef4444', glow: 'rgba(239,68,68,0.35)', label: 'High risk' };
   };
 
   const colors = getColors();
@@ -32,14 +32,13 @@ const ResultsGauge = ({ riskScore = 0, decision = 'allow', stats }) => {
 
   const tooltipEl = showInfo ? (
     <div
-      className="fixed z-[9999] w-64 p-3 rounded-xl text-xs text-slate-300 animate-fade-in"
+      className="fixed z-[9999] w-64 p-3 rounded-xl text-xs text-zinc-300 animate-fade-in"
       style={{
         top: pos.top,
         left: Math.max(16, pos.left),
-        background: 'rgba(26, 21, 37, 0.98)',
-        backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255,255,255,0.1)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+        background: '#2c2c2c',
+        border: `1px solid ${colors.primary}40`,
+        boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(34, 197, 94, 0.1)',
       }}
     >
       The risk score (0–100) is computed by our ML model from login features (time, region, device, role, failed attempts, etc.). Higher scores indicate higher identity risk. The decision (Allow / MFA / Block) is derived from this score and anomaly signals.
@@ -47,7 +46,7 @@ const ResultsGauge = ({ riskScore = 0, decision = 'allow', stats }) => {
   ) : null;
 
   return (
-    <div className="relative overflow-visible rounded-2xl border border-zinc-600/40 bg-gradient-to-b from-zinc-800/70 to-zinc-900/80 backdrop-blur-xl p-6 shadow-[0_0_40px_-10px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.04)] animate-fade-in">
+    <div className="hyper-card relative overflow-visible rounded-2xl p-6 shadow-[0_0_28px_-4px_rgba(34,197,94,0.12)] animate-fade-in">
       <div className="absolute inset-0 rounded-2xl overflow-hidden">
         <div
           className="absolute inset-0 opacity-20"
@@ -59,8 +58,8 @@ const ResultsGauge = ({ riskScore = 0, decision = 'allow', stats }) => {
 
       <div className="relative flex flex-col items-center">
         <div className="flex justify-between items-center w-full mb-6">
-          <h3 className="text-base font-semibold text-zinc-200 flex items-center gap-2">
-            <Shield className="w-4 h-4 text-zinc-400" />
+          <h3 className="text-base font-semibold text-white flex items-center gap-2">
+            <Shield className="w-4 h-4" style={{ color: colors.primary }} />
             Results
           </h3>
           <button
@@ -69,7 +68,7 @@ const ResultsGauge = ({ riskScore = 0, decision = 'allow', stats }) => {
             onClick={() => setShowInfo(!showInfo)}
             onMouseEnter={() => setShowInfo(true)}
             onMouseLeave={() => setShowInfo(false)}
-            className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-600/20 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
           >
             <Info className="w-4 h-4" />
           </button>
@@ -124,7 +123,7 @@ const ResultsGauge = ({ riskScore = 0, decision = 'allow', stats }) => {
           </div>
         </div>
 
-        <div className="mt-4 px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wider bg-zinc-700/40 text-zinc-300 border border-zinc-500/40">
+        <div className="mt-4 px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wider border" style={{ background: `${colors.primary}22`, borderColor: `${colors.primary}66`, color: colors.primary }}>
           {decision}
         </div>
 

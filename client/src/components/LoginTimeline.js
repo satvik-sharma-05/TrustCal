@@ -90,7 +90,7 @@ const LoginTimeline = ({ events = [], onEventClick, selectedEvent, searchQuery, 
   const hasMore = sortedEvents.length > visibleCount;
 
   return (
-    <div className="rounded-xl border border-white/10 bg-zinc-900/80 backdrop-blur-xl overflow-hidden animate-fade-in">
+    <div className="hyper-card overflow-hidden animate-fade-in">
       <div className="px-4 sm:px-6 py-4 border-b border-white/5 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <h3 className="text-base font-semibold text-white">Recent Activity</h3>

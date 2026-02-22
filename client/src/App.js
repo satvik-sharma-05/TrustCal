@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { Shield, WifiOff, Menu } from 'lucide-react';
-import SplineRobotSection from './components/SplineRobotSection';
+import TubesLanding from './components/TubesLanding';
+import ShaderBackground from './components/ui/ShaderBackground';
+import BottomNavBar from './components/ui/BottomNavBar';
+import { motion } from 'framer-motion';
 import ScrollReveal from './components/ScrollReveal';
 import StatsCard from './components/StatsCard';
 import LoginTimeline from './components/LoginTimeline';
@@ -121,43 +124,29 @@ function App() {
       <div className="min-h-screen flex items-center justify-center bg-navy-base">
         <div className="text-center animate-fade-in">
           <div className="w-14 h-14 rounded-full border-2 border-zinc-500/50 border-t-zinc-400 animate-spin mx-auto mb-4" />
-          <div className="text-zinc-400 font-medium">Loading TrustCal ML...</div>
+          <div className="text-zinc-400 font-medium">Loading PulseGuard...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-navy-base relative robotic-theme">
-      {/* Robot: always full-screen background, follows cursor */}
-      <div className="fixed inset-0 z-0 w-full h-full">
-        <SplineRobotSection />
-      </div>
-
-      {/* Landing: project description + "Click to enter" below */}
+    <div className={`min-h-screen relative robotic-theme transition-colors duration-500 ${hasEntered ? 'bg-transparent' : 'bg-navy-base'}`}>
+      {/* Entering screen: Tubes cursor + PulseGuard hero */}
       {!hasEntered && (
-        <div
-          className="fixed inset-0 z-10 flex items-center justify-center bg-zinc-950/90 backdrop-blur-md cursor-pointer select-none transition-opacity duration-500"
-          onClick={() => setHasEntered(true)}
-          onKeyDown={(e) => e.key === 'Enter' && setHasEntered(true)}
-          role="button"
-          tabIndex={0}
-          aria-label="Enter site"
-        >
-          <div className="text-center animate-fade-in max-w-lg px-6">
-            <p className="text-zinc-300 font-display text-sm sm:text-base leading-relaxed tracking-wide">
-              TrustCal ML is a privacy-preserving login risk dashboard. It uses an Isolation Forest model over 13 features to score logins in real time, suggest MFA or block high-risk events, and surface analytics—all with simulated data so no real credentials are used.
-            </p>
-            <p className="mt-8 text-white font-display text-xl sm:text-2xl tracking-[0.3em] uppercase transition-colors duration-300 hover:text-zinc-200">
-              Click to enter
-            </p>
-          </div>
+        <TubesLanding onEnter={() => setHasEntered(true)} />
+      )}
+
+      {/* Dashboard: full-screen shader background — reduced opacity so it's subtle */}
+      {hasEntered && (
+        <div className="fixed inset-0 z-0 overflow-hidden opacity-[0.35]">
+          <ShaderBackground />
         </div>
       )}
 
-      {/* Site content: fades in after enter */}
+      {/* Site content: smooth fade in after enter */}
       <div
-        className={`relative z-10 transition-opacity duration-700 ease-out ${hasEntered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`relative z-10 min-h-screen transition-opacity duration-[1000ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] ${hasEntered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
         {!backendOnline && (
           <div className="relative z-20 glass-secondary border-amber/30 py-2 px-4 flex items-center justify-center gap-2 text-amber text-sm animate-fade-in">
@@ -168,22 +157,20 @@ function App() {
 
         {/* Header - black/grey/white cybersecurity */}
       <header className="relative z-20 backdrop-blur-xl bg-zinc-950/95 border-b border-white/10 px-4 sm:px-6 py-3 sticky top-0 shadow-lg shadow-black/20 font-display transition-colors duration-300">
-        <div className="max-w-[1600px] mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3 sm:gap-6">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10">
-                <Shield className="w-5 h-5 text-zinc-300" />
-              </div>
-              <span className="text-base sm:text-lg font-bold text-white tracking-wider">TRUSTCAL ML</span>
+        <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-4">
+          <motion.div
+            className="flex items-center gap-2 sm:gap-3"
+            whileHover={{ scale: 1.03 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 18 }}
+          >
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10 shadow-[0_0_16px_rgba(34,197,94,0.35)]">
+              <Shield className="w-5 h-5 text-emerald-400" />
             </div>
-            <nav className="hidden md:flex items-center gap-1 font-mono text-xs tracking-wider uppercase">
-              <a href="#analytics" className="px-3 sm:px-4 py-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10 transition-all duration-300">
-                Analytics
-              </a>
-              <a href="#events" className="px-3 sm:px-4 py-2 rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-white/5 transition-all duration-300">
-                Events
-              </a>
-            </nav>
+            <span className="text-base sm:text-lg font-bold text-white tracking-wider">PULSEGUARD</span>
+          </motion.div>
+
+          <div className="hidden md:flex flex-1 justify-center">
+            <BottomNavBar className="bg-zinc-900/80 border-white/10" />
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
             {mlStatus.modelLoaded && (
@@ -206,15 +193,15 @@ function App() {
           </div>
         </div>
         {navOpen && (
-          <div className="md:hidden mt-3 pt-3 border-t border-white/10 flex flex-col gap-1 animate-fade-in font-mono text-xs tracking-wider uppercase">
+          <div className="md:hidden mt-3 pt-3 border-t border-white/10 flex flex-col gap-3 animate-fade-in font-mono text-xs tracking-wider uppercase">
             <a href="#analytics" onClick={() => setNavOpen(false)} className="px-4 py-2 rounded-lg text-zinc-300 hover:text-white hover:bg-white/5 transition-colors duration-300">Analytics</a>
             <a href="#events" onClick={() => setNavOpen(false)} className="px-4 py-2 rounded-lg text-zinc-300 hover:text-white hover:bg-white/5 transition-colors duration-300">Events</a>
           </div>
         )}
       </header>
 
-      {/* Dashboard panel - transparent so robot visible behind */}
-      <main className="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-6 py-8 sm:py-10 dashboard-panel">
+      {/* Dashboard panel - semi-transparent so shader background shows through */}
+      <main className="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-6 py-8 sm:py-10 dashboard-panel dashboard-panel-shader">
         {/* 1. Stats cards - top */}
         <section id="analytics" className="mb-8 sm:mb-10 scroll-mt-24">
           <ScrollReveal>
@@ -242,7 +229,7 @@ function App() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6 mb-8 sm:mb-10">
           <div className="lg:col-span-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <div className="rounded-xl border border-white/10 bg-zinc-900/80 backdrop-blur-xl p-6 sm:p-8 flex flex-col items-center justify-center min-h-[280px] sm:min-h-[320px]">
+            <div className="hyper-card p-6 sm:p-8 flex flex-col items-center justify-center min-h-[280px] sm:min-h-[320px]">
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-4 sm:mb-6 animate-breathe">
                 <span className="text-xl sm:text-2xl font-bold text-white">ML</span>
               </div>
@@ -279,7 +266,7 @@ function App() {
               features={selectedEvent.explanation?.topContributingFeatures || selectedEvent.topFeatures || []}
             />
           ) : (
-            <div className="rounded-xl border border-white/10 bg-zinc-900/80 backdrop-blur-xl p-5 sm:p-6 animate-fade-in">
+            <div className="hyper-card p-5 sm:p-6 animate-fade-in">
               <h3 className="text-base font-semibold text-white mb-2">Anomaly Drivers</h3>
               <p className="text-sm text-zinc-500">Select an event below to view ML-derived top contributing features.</p>
             </div>
@@ -321,7 +308,7 @@ function App() {
 
       <footer className="relative z-20 backdrop-blur-xl bg-zinc-950/90 border-t border-white/10 py-5 mt-10 sm:mt-12 shadow-[0_-4px_24px_rgba(0,0,0,0.2)] font-mono transition-colors duration-300">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 text-center text-zinc-500 text-xs sm:text-sm tracking-wider">
-          TRUSTCAL ML — ISOLATION FOREST • 13 FEATURES • PRIVACY-PRESERVING SIMULATED LOGS
+          PULSEGUARD — ISOLATION FOREST • 13 FEATURES • PRIVACY-PRESERVING SIMULATED LOGS
         </div>
       </footer>
       </div>

@@ -35,6 +35,4 @@ const userProfileSchema = new mongoose.Schema({
   baselineReliable: { type: Boolean, default: false }
 });
 
-userProfileSchema.index({ userId: 1 });
-
 module.exports = mongoose.model('UserProfile', userProfileSchema);

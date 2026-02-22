@@ -8,7 +8,7 @@ const FeatureImportance = ({ features }) => {
   const maxAbs = Math.max(...features.map((f) => Math.abs(f.contribution ?? f.deviationScore ?? 0)), 0.001);
 
   return (
-    <div className="rounded-xl border border-white/10 bg-zinc-900/80 backdrop-blur-xl p-5 sm:p-6 animate-fade-in shadow-xl shadow-black/20">
+    <div className="hyper-card p-5 sm:p-6 animate-fade-in">
       <div className="flex items-center gap-2 mb-1">
         <div className="p-2 rounded-lg bg-white/5 border border-white/10">
           <Activity className="w-5 h-5 text-zinc-300" />

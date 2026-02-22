@@ -9,7 +9,7 @@ const explanationSchema = new mongoose.Schema({
 }, { _id: false });
 
 const loginEventSchema = new mongoose.Schema({
-  userId: { type: String, required: true, index: true },
+  userId: { type: String, required: true },
   displayName: { type: String, default: null },
   email: { type: String, default: null },
   timestamp: { type: Date, required: true, index: true },

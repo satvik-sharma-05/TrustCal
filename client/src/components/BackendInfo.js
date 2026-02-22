@@ -5,7 +5,7 @@ const BackendInfo = ({ mlStatus }) => {
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="rounded-xl border border-white/10 bg-zinc-900/80 backdrop-blur-xl overflow-hidden animate-fade-in">
+    <div className="hyper-card overflow-hidden animate-fade-in">
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full px-5 py-4 flex items-center justify-between gap-4 text-left hover:bg-white/5 transition-colors"

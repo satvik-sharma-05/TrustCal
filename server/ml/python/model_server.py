@@ -5,6 +5,7 @@ Explainability: deviation magnitude and absolute deviation from baseline.
 """
 import os
 import json
+from contextlib import asynccontextmanager
 import numpy as np
 import joblib
 from fastapi import FastAPI, HTTPException
@@ -12,11 +13,25 @@ from pydantic import BaseModel
 
 from config import FEATURE_NAMES, MODEL_PATH, SCALER_PATH, METADATA_PATH
 
-app = FastAPI(title="TrustCal ML Inference")
-
 model = None
 scaler = None
 metadata = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Load model on startup, no cleanup needed."""
+    global model, scaler, metadata
+    try:
+        load_model()
+        print("Model and scaler loaded successfully.")
+    except FileNotFoundError as e:
+        print(f"Startup warning: {e}. Run train.py to generate model.")
+    yield
+    # shutdown: nothing to do
+
+
+app = FastAPI(title="TrustCal ML Inference", lifespan=lifespan)
 
 # Percentile -> risk mapping: top 5% anomaly -> 90-100, 5-20% -> 70-90, middle -> 30-70, bottom -> 0-30
 def _percentile_to_risk(perc: float) -> float:
@@ -97,15 +112,6 @@ def explain_anomaly(features_scaled: np.ndarray) -> list[dict]:
     # Rank by absolute contribution (impact), then by deviation magnitude
     contributions.sort(key=lambda x: (abs(x["contribution"]), x["deviation_magnitude"]), reverse=True)
     return contributions[:3]
-
-
-@app.on_event("startup")
-def startup():
-    try:
-        load_model()
-        print("Model and scaler loaded successfully.")
-    except FileNotFoundError as e:
-        print(f"Startup warning: {e}. Run train.py to generate model.")
 
 
 @app.get("/health")
