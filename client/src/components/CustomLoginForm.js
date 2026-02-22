@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Loader, ChevronRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Loader, ChevronRight, User, Hash, Globe, Smartphone, Clock, Mail, ShieldCheck, AlertTriangle, Shield } from 'lucide-react';
 import { evaluateLogin } from '../services/api';
 
 const REGIONS = ['US-East', 'US-West', 'EU-Central', 'EU-West', 'AP-South', 'AP-North', 'Other'];
@@ -10,13 +11,55 @@ const USER_TYPES = [
   { value: 'contractor', label: 'Contractor' },
   { value: 'guest', label: 'Guest' },
 ];
-const DEVICE_TYPES = [
-  { value: 'mobile', label: 'Mobile' },
-  { value: 'desktop', label: 'Desktop' },
-  { value: 'tablet', label: 'Tablet' },
-  { value: 'server', label: 'Server' },
-  { value: 'unknown', label: 'Unknown' },
-];
+
+const InputField = ({ label, name, icon: Icon, value, onChange, placeholder, type = "text", options = [], ...props }) => {
+  const [isFocused, setIsFocused] = useState(false);
+
+  return (
+    <div className="relative mb-6 group">
+      <div className={`absolute left-4 top-1/2 -translate-y-1/2 transition-all duration-300 ${isFocused ? 'text-primary scale-110 drop-shadow-[0_0_8px_var(--primary)]' : 'text-primary/20'}`}>
+        <Icon size={16} />
+      </div>
+
+      {type === 'select' ? (
+        <select
+          name={name}
+          value={value}
+          onChange={onChange}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          className={`w-full bg-black/60 border rounded-sm py-4 pl-12 pr-4 text-[13px] font-mono text-white transition-all duration-300 outline-none appearance-none cursor-pointer
+            ${isFocused ? 'border-primary ring-1 ring-primary/30 shadow-[0_0_15px_rgba(0,255,65,0.1)]' : 'border-primary/10 hover:border-primary/30'}`}
+          {...props}
+        >
+          {options.map(opt => <option key={opt} value={opt.toLowerCase()} className="bg-black text-white">{opt}</option>)}
+        </select>
+      ) : (
+        <input
+          type={type}
+          name={name}
+          value={value}
+          onChange={onChange}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          className={`w-full bg-black/60 border rounded-sm py-4 pl-12 pr-4 text-[13px] font-mono text-white placeholder:text-white/5 transition-all duration-300 outline-none
+            ${isFocused ? 'border-primary ring-1 ring-primary/30 shadow-[0_0_15px_rgba(0,255,65,0.1)]' : 'border-primary/10 hover:border-primary/30'}`}
+          placeholder={placeholder}
+          {...props}
+        />
+      )}
+
+      <label className={`absolute left-10 transition-all duration-300 pointer-events-none uppercase font-black tracking-[0.2em] text-[8px]
+        ${isFocused || value ? '-top-2.5 bg-black px-2 text-primary opacity-100 scale-90' : 'top-4 text-primary/0 opacity-0'}`}>
+        {label}
+      </label>
+
+      {/* Animated focus border segment */}
+      <div className={`absolute top-0 right-0 w-2 h-2 border-t border-r border-primary transition-opacity duration-300 ${isFocused ? 'opacity-100' : 'opacity-0'}`} />
+      <div className={`absolute bottom-0 left-0 w-2 h-2 border-b border-l border-primary transition-opacity duration-300 ${isFocused ? 'opacity-100' : 'opacity-0'}`} />
+    </div>
+  );
+};
 
 const CustomLoginForm = ({ onEvaluate, backendOnline = false, embedded = false }) => {
   const [formData, setFormData] = useState({
@@ -47,7 +90,7 @@ const CustomLoginForm = ({ onEvaluate, backendOnline = false, embedded = false }
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!backendOnline) {
-      setError('Backend offline. Start the server first.');
+      setError('Adaptive Engine unreachable.');
       return;
     }
     setLoading(true);
@@ -55,243 +98,160 @@ const CustomLoginForm = ({ onEvaluate, backendOnline = false, embedded = false }
     setResult(null);
     try {
       const eventData = {
-        displayName: formData.displayName.trim() || undefined,
-        userId: formData.userId.trim() || undefined,
-        userType: formData.userType,
-        deviceType: formData.deviceType,
-        deviceId: formData.deviceId.trim() || undefined,
-        region: formData.region,
+        ...formData,
         timestamp: new Date(formData.timestamp).toISOString(),
-        failedAttempts: formData.failedAttempts,
-        isNewUser: formData.isNewUser,
-        ipAddress: formData.ipAddress.trim() || undefined,
-        email: formData.email.trim() || undefined,
       };
       const response = await evaluateLogin(eventData);
       if (response.success) {
         setResult(response.data);
         if (onEvaluate) onEvaluate();
       } else {
-        setError(response.error || 'Evaluation failed');
+        setError(response.error || 'Intelligence analysis failed');
       }
     } catch (err) {
-      setError(err.message || 'Failed to evaluate login');
+      setError(err.message || 'Engine communication failure');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className={embedded ? '' : 'glass-card p-6'}>
-      <h3 className="text-base font-semibold text-slate-200 mb-1 flex items-center gap-2">
-        New Evaluation
-        <span className="w-12 h-px bg-gradient-to-r from-purple/50 to-transparent" />
-      </h3>
-      <form onSubmit={handleSubmit} className="space-y-4 mt-6">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="label-upper block mb-1.5">Name (optional)</label>
-            <input
-              type="text"
-              name="displayName"
-              value={formData.displayName}
-              onChange={handleChange}
-              className="w-full recessed-input px-3 py-2 text-slate-200 text-sm placeholder-slate-500 focus:border-purple transition-colors"
-              placeholder="e.g. John Doe"
+    <div className={embedded ? '' : 'hyper-card p-10 bg-black/80 backdrop-blur-md border border-primary/20 shadow-2xl overflow-hidden relative group'}>
+      {/* Decorative Matrix Grids */}
+      <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[linear-gradient(rgba(0,255,65,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,65,0.1)_1px,transparent_1px)] [background-size:20px_20px]" />
+
+      <header className="mb-12 relative z-10">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-1.5 h-1.5 bg-primary animate-pulse" />
+          <h3 className="text-[10px] font-black tracking-[0.4em] text-primary uppercase opacity-60">
+            Secure_Input_Portal
+          </h3>
+        </div>
+        <p className="text-4xl font-black tracking-tighter text-white drop-shadow-[0_0_10px_rgba(0,255,65,0.2)]">Identity Audit <span className="text-primary font-mono text-sm opacity-40 ml-2">v4.0.2</span></p>
+      </header>
+
+      <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+          <InputField label="Identity Name" name="displayName" icon={User} value={formData.displayName} onChange={handleChange} placeholder="Identity name" />
+          <InputField label="Subject UID" name="userId" icon={Hash} value={formData.userId} onChange={handleChange} placeholder="Terminal UID" />
+          <InputField label="Deployment Zone" name="region" icon={Globe} value={formData.region} onChange={handleChange} type="select" options={REGIONS} />
+          <InputField label="Context Role" name="userType" icon={Smartphone} value={formData.userType} onChange={handleChange} type="select" options={USER_TYPES.map(u => u.label)} />
+          <InputField label="Device Mask" name="deviceId" icon={Smartphone} value={formData.deviceId} onChange={handleChange} placeholder="id_hw_...." />
+          <InputField label="Access Time" name="timestamp" icon={Clock} value={formData.timestamp} onChange={handleChange} type="datetime-local" />
+        </div>
+
+        {/* Failed Attempts Slider - Matrix Styled */}
+        <div className="space-y-6 p-6 bg-black border border-primary/10 rounded-sm relative overflow-hidden group/slider">
+          <div className="flex justify-between items-center relative z-10">
+            <span className="text-[9px] font-black tracking-[0.2em] text-primary/60 uppercase">Anomalous_Entries</span>
+            <span className="text-2xl font-mono font-black text-primary drop-shadow-[0_0_8px_var(--primary)]">{formData.failedAttempts}</span>
+          </div>
+          <div className="relative h-2 flex items-center">
+            <div className="absolute w-full h-1 bg-primary/10 rounded-full" />
+            <div
+              className="absolute h-1 bg-primary shadow-[0_0_10px_var(--primary)] rounded-full transition-all duration-300"
+              style={{ width: `${formData.failedAttempts * 10}%` }}
             />
-          </div>
-          <div>
-            <label className="label-upper block mb-1.5">User ID (optional)</label>
             <input
-              type="text"
-              name="userId"
-              value={formData.userId}
-              onChange={handleChange}
-              className="w-full recessed-input px-3 py-2 text-slate-200 text-sm placeholder-slate-500 focus:border-purple transition-colors"
-              placeholder="Auto UUID if empty"
-            />
-          </div>
-          <div>
-            <label className="label-upper block mb-1.5">Timestamp</label>
-            <input
-              type="datetime-local"
-              name="timestamp"
-              value={formData.timestamp}
-              onChange={handleChange}
-              className="w-full recessed-input px-3 py-2 text-slate-200 text-sm focus:border-purple transition-colors"
-            />
-          </div>
-          <div>
-            <label className="label-upper block mb-1.5">User Type</label>
-            <select
-              name="userType"
-              value={formData.userType}
-              onChange={handleChange}
-              className="w-full recessed-input px-3 py-2 text-slate-200 text-sm focus:border-purple transition-colors bg-navy-mid/50"
-            >
-              {USER_TYPES.map((t) => (
-                <option key={t.value} value={t.value} className="bg-navy-mid text-slate-200">
-                  {t.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label-upper block mb-1.5">Device Type</label>
-            <select
-              name="deviceType"
-              value={formData.deviceType}
-              onChange={handleChange}
-              className="w-full recessed-input px-3 py-2 text-slate-200 text-sm focus:border-purple transition-colors bg-navy-mid/50"
-            >
-              {DEVICE_TYPES.map((t) => (
-                <option key={t.value} value={t.value} className="bg-navy-mid text-slate-200">
-                  {t.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label-upper block mb-1.5">Device ID</label>
-            <input
-              type="text"
-              name="deviceId"
-              value={formData.deviceId}
-              onChange={handleChange}
-              className="w-full recessed-input px-3 py-2 text-slate-200 text-sm placeholder-slate-500 focus:border-purple transition-colors font-mono"
-              placeholder="e.g. device_abc"
-            />
-          </div>
-          <div>
-            <label className="label-upper block mb-1.5">Region</label>
-            <select
-              name="region"
-              value={formData.region}
-              onChange={handleChange}
-              className="w-full recessed-input px-3 py-2 text-slate-200 text-sm focus:border-purple transition-colors bg-navy-mid/50"
-            >
-              {REGIONS.map((r) => (
-                <option key={r} value={r} className="bg-navy-mid text-slate-200">
-                  {r}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label-upper block mb-1.5">Failed Attempts</label>
-            <input
-              type="number"
+              type="range"
+              min="0"
+              max="10"
               name="failedAttempts"
               value={formData.failedAttempts}
               onChange={handleChange}
-              min={0}
-              max={10}
-              className="w-full recessed-input px-3 py-2 text-slate-200 text-sm focus:border-purple transition-colors"
+              className="absolute w-full h-2 opacity-0 cursor-pointer z-10"
+            />
+            <div
+              className="absolute w-4 h-4 bg-white border-2 border-primary rounded-sm shadow-[0_0_10px_var(--primary)] transition-all duration-300 pointer-events-none"
+              style={{ left: `calc(${formData.failedAttempts * 10}% - 8px)` }}
             />
           </div>
-          <div className="col-span-2 flex items-center gap-3 pt-2">
-            <button
-              type="button"
-              role="switch"
-              aria-checked={formData.isNewUser}
-              onClick={() => setFormData((p) => ({ ...p, isNewUser: !p.isNewUser }))}
-              className={`relative w-11 h-6 rounded-full transition-colors ${formData.isNewUser ? 'bg-purple' : 'bg-slate-600'}`}
-            >
-              <span
-                className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${formData.isNewUser ? 'left-6' : 'left-1'}`}
-              />
-            </button>
-            <label className="text-sm text-slate-400">New user</label>
-          </div>
-          <div>
-            <label className="label-upper block mb-1.5">Email (optional)</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full recessed-input px-3 py-2 text-slate-200 text-sm placeholder-slate-500 focus:border-purple transition-colors"
-              placeholder="user@example.com"
-            />
-          </div>
-          <div>
-            <label className="label-upper block mb-1.5">IP address (optional)</label>
-            <input
-              type="text"
-              name="ipAddress"
-              value={formData.ipAddress}
-              onChange={handleChange}
-              className="w-full recessed-input px-3 py-2 text-slate-200 text-sm placeholder-slate-500 focus:border-purple transition-colors font-mono"
-              placeholder="Region derived if empty"
-            />
+          <div className="flex justify-between text-[7px] font-black text-primary/30 uppercase tracking-[0.2em] relative z-10">
+            <span>Base_Baseline</span>
+            <span>Critical_Overload</span>
           </div>
         </div>
 
-        <button
+        <div className="flex items-center gap-6 p-6 bg-black border border-primary/10 rounded-sm relative group/switch">
+          <button
+            type="button"
+            onClick={() => setFormData((p) => ({ ...p, isNewUser: !p.isNewUser }))}
+            className={`relative w-12 h-6 rounded-sm transition-all duration-500 border ${formData.isNewUser ? 'bg-primary/20 border-primary shadow-[0_0_10px_rgba(0,255,65,0.2)]' : 'bg-black border-primary/20'}`}
+          >
+            <motion.div
+              layout
+              className={`absolute top-1 left-1 w-3.5 h-3.5 rounded-sm transition-colors duration-500 ${formData.isNewUser ? 'bg-primary' : 'bg-primary/40'}`}
+              animate={{ x: formData.isNewUser ? 24 : 0 }}
+            />
+          </button>
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black tracking-[0.1em] text-white uppercase">Identity_Ghosting_Mode</span>
+            <span className="text-[8px] font-bold text-primary/40 uppercase tracking-widest mt-1">Enforce zero-knowledge isolation</span>
+          </div>
+        </div>
+
+        <motion.button
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.98 }}
           type="submit"
           disabled={loading || !backendOnline}
-          className="w-full bg-purple hover:bg-purple/90 text-white font-semibold py-3 px-4 rounded-lg text-sm transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(139,92,246,0.2)] hover:shadow-[0_0_28px_rgba(139,92,246,0.3)]"
+          className="relative w-full py-5 bg-black border border-primary text-primary font-black tracking-[0.4em] uppercase text-xs shadow-lg shadow-primary/5 relative overflow-hidden group/btn disabled:opacity-50"
         >
-          {loading ? (
-            <>
-              <Loader className="w-4 h-4 animate-spin" />
-              Evaluating...
-            </>
-          ) : (
-            <>
-              Evaluate Login Risk
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-            </>
-          )}
-        </button>
+          <div className="absolute inset-0 bg-primary/10 translate-x-[-100%] group-hover/btn:translate-x-0 transition-transform duration-500" />
+          <div className="relative flex items-center justify-center gap-4">
+            {loading ? <Loader className="w-5 h-5 animate-spin" /> : (
+              <>
+                <Shield className="w-4 h-4 animate-flicker" />
+                <span>Bypass Isolation</span>
+              </>
+            )}
+          </div>
+        </motion.button>
       </form>
 
       {error && (
-        <div className="mt-4 p-3 rounded-lg bg-crimson/10 border border-crimson/30 text-crimson text-sm">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mt-6 p-4 rounded-xl bg-danger/10 border border-danger/30 text-danger text-[10px] font-black uppercase tracking-widest text-center"
+        >
           {error}
-        </div>
+        </motion.div>
       )}
 
       {result && (
-        <div className="mt-6 pt-5 border-t border-white/5">
-          <h4 className="label-upper mb-3">Risk evaluation result</h4>
-          <div className="grid grid-cols-3 gap-4 mb-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="mt-12 p-10 bg-black/90 border border-primary/30 relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none rotate-12">
+            <ShieldCheck size={200} className="text-primary" />
+          </div>
+
+          <div className="flex flex-col gap-10 relative z-10">
             <div>
-              <div className="label-upper text-[10px]">Anomaly</div>
-              <div className="text-lg font-light text-slate-200">{(result.anomalyScore * 100).toFixed(1)}%</div>
+              <h4 className="text-[9px] font-black tracking-[0.5em] text-primary/40 uppercase mb-4">Neural_Audit_Complete</h4>
+              <div className="flex items-baseline gap-4">
+                <span className={`text-8xl font-black font-mono tracking-tighter ${result.decision === 'block' ? 'text-danger drop-shadow-[0_0_20px_rgba(255,0,51,0.4)]' : result.decision === 'mfa' ? 'text-accent drop-shadow-[0_0_20px_rgba(0,245,255,0.4)]' : 'text-primary drop-shadow-[0_0_20px_rgba(0,255,65,0.4)]'}`}>
+                  {result.riskScore}
+                </span>
+                <span className="text-xs font-black text-primary/40 uppercase tracking-widest">/ Intelligence_Index</span>
+              </div>
             </div>
-            <div>
-              <div className="label-upper text-[10px]">Risk</div>
-              <div className="text-lg font-light text-slate-200">{result.riskScore}/100</div>
-            </div>
-            <div>
-              <div className="label-upper text-[10px]">Decision</div>
-              <div
-                className={`text-lg font-medium uppercase ${
-                  result.decision === 'block' ? 'text-crimson' : result.decision === 'mfa' ? 'text-amber' : 'text-emerald'
-                }`}
-              >
-                {result.decision}
+
+            <div className="grid grid-cols-2 gap-8">
+              <div className="p-6 bg-black border border-primary/10 group/item hover:border-primary/40 transition-colors">
+                <p className="text-[8px] font-black text-primary/40 uppercase tracking-widest mb-3">Model_Confidence</p>
+                <p className="text-3xl font-mono font-black text-white">{(result.modelConfidence * 100).toFixed(0)}%</p>
+              </div>
+              <div className="p-6 bg-black border border-primary/10 group/item hover:border-primary/40 transition-colors">
+                <p className="text-[8px] font-black text-primary/40 uppercase tracking-widest mb-3">Latency_Pulse</p>
+                <p className="text-3xl font-mono font-black text-white">{result.processingTimeMs}<span className="text-xs opacity-40 ml-1">ms</span></p>
               </div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2 text-xs text-slate-500">
-            <div>Model confidence: {result.modelConfidence != null ? (result.modelConfidence * 100).toFixed(0) : '—'}%</div>
-            <div>Processing: {result.processingTimeMs != null ? `${result.processingTimeMs} ms` : '—'}</div>
-          </div>
-          {result.featureContributions?.length > 0 && (
-            <div className="mt-3">
-              <div className="label-upper text-[10px] mb-1.5">Top features</div>
-              <ul className="space-y-1 text-sm text-slate-400 font-mono">
-                {result.featureContributions.slice(0, 3).map((f, i) => (
-                  <li key={i}>
-                    {f.feature}: {f.deviationScore?.toFixed(3)}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
+        </motion.div>
       )}
     </div>
   );

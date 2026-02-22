@@ -65,18 +65,20 @@ def train():
     )
     clf.fit(X_train_scaled)
 
-    # 4. Raw scores: decision_function (more negative = more anomalous)
-    raw_train = clf.decision_function(X_train_scaled)
-    raw_normal_val = clf.decision_function(X_normal_val_scaled)
-    raw_attack = clf.decision_function(X_attack_scaled)
+    # 4. Raw scores: score_samples (lower = more anomalous)
+    raw_train = clf.score_samples(X_train_scaled)
+    raw_normal_val = clf.score_samples(X_normal_val_scaled)
+    raw_attack = clf.score_samples(X_attack_scaled)
 
-    # Training distribution (normal only) for min/max normalization reference
+    # Training distribution (normal only) for Z-score and min/max calibration
+    anomaly_mean = float(np.mean(raw_train))
+    anomaly_std = float(np.std(raw_train))
     score_min_train = float(np.min(raw_train))
     score_max_train = float(np.max(raw_train))
 
     # Calibration: percentile distribution from validation set (normal + attack) for risk mapping
     all_raw = np.concatenate([raw_normal_val, raw_attack])
-    percentiles = [5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95]
+    percentiles = [1, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 99]
     score_percentiles = {p: float(np.percentile(all_raw, p)) for p in percentiles}
 
     # Anomaly score 0-1 for metrics (percentile rank: lower raw = more anomalous = higher rank)
@@ -123,6 +125,8 @@ def train():
         "contamination": CONTAMINATION,
         "featureSchema": FEATURE_NAMES,
         "n_features": len(FEATURE_NAMES),
+        "anomaly_mean": anomaly_mean,
+        "anomaly_std": anomaly_std,
         "score_min_train": score_min_train,
         "score_max_train": score_max_train,
         "score_percentiles": score_percentiles,
@@ -134,7 +138,7 @@ def train():
         "f1": float(f1),
         "roc_auc": float(auc),
         "model_confidence": model_confidence,
-        "n_train_normal": int(len(X_train)),
+        "n_train": int(len(X_train)),
         "n_validation_normal": int(len(X_normal_val)),
         "n_validation_anomaly": int(len(X_attack)),
     }

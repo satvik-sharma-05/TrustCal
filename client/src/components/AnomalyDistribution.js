@@ -8,9 +8,9 @@ const AnomalyDistribution = ({ events = [] }) => {
   const [hovered, setHovered] = useState(false);
   if (!events?.length) {
     return (
-      <div className="hyper-card p-6">
-        <h3 className="text-base font-semibold text-white mb-4">Anomaly Distribution</h3>
-        <div className="h-64 flex items-center justify-center text-zinc-500 text-sm">No data</div>
+      <div className="hyper-card p-8 bg-black/80 border border-primary/20 shadow-2xl relative overflow-hidden group min-h-[300px] flex flex-col justify-center items-center">
+        <h3 className="text-[9px] font-black tracking-[0.5em] text-primary/40 uppercase mb-8 absolute top-8 left-8">Anomaly_Distribution</h3>
+        <div className="text-primary/20 text-[10px] font-black uppercase tracking-[0.4em] italic animate-pulse">Awaiting signals...</div>
       </div>
     );
   }
@@ -21,40 +21,57 @@ const AnomalyDistribution = ({ events = [] }) => {
       const s = e.anomalyScore ?? (e.riskScore / 100);
       return s >= bin && s < bins[i + 1];
     }).length;
-    return { range: `${(bin * 100).toFixed(0)}–${(bins[i + 1] * 100).toFixed(0)}%`, count };
+    return { range: `${(bin * 100).toFixed(0)}%`, count };
   });
 
-  const barColors = ['#06b6d4', '#22c55e', '#a855f7', '#f59e0b', '#ef4444'];
+  const barColors = ['#00FF41', '#00CC33', '#00F5FF', '#88FFAA', '#FF0033'];
 
   return (
-    <div className={`hyper-card p-4 sm:p-6 animate-fade-in shadow-[0_0_28px_-4px_rgba(168,85,247,0.12)] transition-shadow duration-300 ${hovered ? 'shadow-[0_0_40px_-6px_rgba(168,85,247,0.3)]' : ''}`}>
-      <ChartWithExplanation title="Anomaly Distribution" explanation={ANOMALY_EXPLANATION}>
-      <ResponsiveContainer width="100%" height={240}>
-        <BarChart data={histogram} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-          <CartesianGrid strokeDasharray="3 3" stroke={hovered ? 'rgba(168,85,247,0.35)' : 'rgba(255,255,255,0.06)'} />
-          <XAxis dataKey="range" stroke="rgba(255,255,255,0.4)" fontSize={11} />
-          <YAxis stroke="rgba(255,255,255,0.4)" fontSize={11} />
-          <Tooltip
-            contentStyle={{
-              background: '#1e1e1e',
-              border: '1px solid rgba(168, 85, 247, 0.4)',
-              borderRadius: 14,
-              padding: '14px 18px',
-              fontSize: 16,
-              fontWeight: 500,
-              color: '#f4f4f5',
-              boxShadow: '0 0 28px rgba(168, 85, 247, 0.2)',
-            }}
-            itemStyle={{ fontSize: 15, color: '#f4f4f5' }}
-            labelStyle={{ fontSize: 16, fontWeight: 600, color: '#fff', marginBottom: 6 }}
-          />
-          <Bar dataKey="count" radius={[6, 6, 0, 0]} isAnimationActive animationDuration={800} animationEasing="ease-out">
-            {histogram.map((_, i) => (
-              <Cell key={i} fill={barColors[i % barColors.length]} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+    <div className={`hyper-card p-10 bg-black/80 border border-primary/20 shadow-2xl transition-all duration-500 hover:border-primary/40 relative overflow-hidden group`}>
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none bg-[radial-gradient(#00FF41_1px,transparent_1px)] [background-size:24px_24px]" />
+
+      <div className="flex items-center gap-3 mb-8 relative z-10">
+        <div className="w-1.5 h-1.5 bg-primary animate-pulse" />
+        <h3 className="text-[10px] font-black tracking-[0.5em] text-primary/60 uppercase">Anomaly_Spectrogram</h3>
+      </div>
+
+      <ChartWithExplanation title="" explanation={ANOMALY_EXPLANATION}>
+        <ResponsiveContainer width="100%" height={260}>
+          <BarChart data={histogram} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+            <defs>
+              <filter id="matrixBarGlow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+            <CartesianGrid strokeDasharray="2 2" vertical={false} stroke="rgba(0, 255, 65, 0.05)" />
+            <XAxis dataKey="range" stroke="rgba(0, 255, 65, 0.3)" fontSize={9} fontWeight="900" tickLine={false} axisLine={false} fontFamily="monospace" />
+            <YAxis stroke="rgba(0, 255, 65, 0.3)" fontSize={9} fontWeight="900" tickLine={false} axisLine={false} fontFamily="monospace" />
+            <Tooltip
+              cursor={{ fill: 'rgba(0, 255, 65, 0.05)' }}
+              contentStyle={{
+                background: 'rgba(0, 0, 0, 0.95)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(0, 255, 65, 0.2)',
+                borderRadius: 2,
+                padding: '12px 16px',
+                fontSize: 10,
+                fontWeight: 800,
+                color: '#FFFFFF',
+                boxShadow: '0 0 20px rgba(0, 255, 65, 0.1)',
+              }}
+              labelStyle={{ fontSize: 10, fontWeight: 900, color: '#FFFFFF', marginBottom: 4, letterSpacing: '0.2em', fontFamily: 'monospace' }}
+            />
+            <Bar dataKey="count" radius={[0, 0, 0, 0]} isAnimationActive animationDuration={1000} animationEasing="ease-out" filter="url(#matrixBarGlow)">
+              {histogram.map((_, i) => (
+                <Cell key={i} fill={barColors[i % barColors.length]} fillOpacity={0.7} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
       </ChartWithExplanation>
     </div>
   );

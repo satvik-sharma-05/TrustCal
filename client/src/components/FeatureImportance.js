@@ -1,80 +1,77 @@
-import React, { useState, useEffect } from 'react';
-import { Activity, ChevronRight, Zap } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Activity, ChevronRight, Zap, Target } from 'lucide-react';
 
 const FeatureImportance = ({ features }) => {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  if (!features?.length) return null;
+  if (!features?.length) {
+    return (
+      <div className="hyper-card p-10 bg-black/80 border border-primary/20 h-full flex flex-col justify-center items-center group relative overflow-hidden">
+        <Target className="w-10 h-10 text-primary opacity-20 mb-8 animate-pulse" />
+        <p className="text-[9px] font-black uppercase tracking-[0.5em] text-primary/40 text-center">
+          Awaiting_Intelligence_Breakdown
+        </p>
+      </div>
+    );
+  }
+
   const maxAbs = Math.max(...features.map((f) => Math.abs(f.contribution ?? f.deviationScore ?? 0)), 0.001);
 
   return (
-    <div className="hyper-card p-5 sm:p-6 animate-fade-in">
-      <div className="flex items-center gap-2 mb-1">
-        <div className="p-2 rounded-lg bg-white/5 border border-white/10">
-          <Activity className="w-5 h-5 text-zinc-300" />
+    <div className="hyper-card p-10 bg-black/80 border border-primary/20 h-full relative overflow-hidden group">
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none bg-[radial-gradient(#00FF41_1px,transparent_1px)] [background-size:24px_24px]" />
+
+      <header className="mb-10 relative z-10">
+        <div className="flex items-center gap-4">
+          <div className="p-2.5 bg-black border border-primary/20 rounded-sm">
+            <Zap className="w-4 h-4 text-primary animate-flicker" />
+          </div>
+          <div>
+            <h3 className="text-[10px] font-black tracking-[0.4em] text-primary/80 uppercase">Primary_Vectors</h3>
+            <p className="text-[8px] font-black text-primary/30 uppercase tracking-[0.3em] mt-1.5">Saliency_Inference_Core</p>
+          </div>
         </div>
-        <h3 className="text-lg font-semibold text-white tracking-tight">
-          Anomaly Drivers
-        </h3>
-      </div>
-      <p className="text-xs text-zinc-500 mb-5 leading-relaxed">
-        Top ML-derived feature contributions. From model explainability (perturbation-based).
-      </p>
+      </header>
+
       <div className="space-y-4">
         {features.slice(0, 5).map((f, i) => {
           const contrib = f.contribution ?? f.deviationScore ?? 0;
           const width = Math.min(100, (Math.abs(contrib) / maxAbs) * 100);
-          const isPrimary = i === 0;
-          const isPositive = contrib > 0;
+
           return (
-            <div
+            <motion.div
               key={i}
-              className={`rounded-lg border transition-all duration-300 hover:border-white/20 ${
-                isPrimary
-                  ? 'bg-white/5 border-white/15 p-4 shadow-lg'
-                  : 'bg-black/20 border-white/5 p-3'
-              }`}
+              initial={{ x: -10, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: i * 0.1 }}
+              className="relative group/bar border-b border-primary/5 pb-4 last:border-0"
             >
-              <div className="flex items-center justify-between gap-3 mb-2">
-                <div className="flex items-center gap-2 min-w-0">
-                  {isPrimary && (
-                    <span className="flex-shrink-0 p-1 rounded bg-white/10">
-                      <Zap className="w-3.5 h-3.5 text-zinc-300" />
-                    </span>
-                  )}
-                  <span className="text-sm font-medium text-zinc-200 truncate">{f.name}</span>
-                  {isPrimary && (
-                    <span className="flex-shrink-0 text-[10px] font-mono uppercase tracking-wider text-zinc-500 bg-zinc-800/80 px-1.5 py-0.5 rounded">
-                      Primary
-                    </span>
-                  )}
-                </div>
-                <span className="flex-shrink-0 font-mono text-sm text-zinc-400 tabular-nums">
-                  {(contrib).toFixed(3)}
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[10px] font-black tracking-[0.1em] text-white/50 group-hover/bar:text-primary transition-colors uppercase">
+                  {f.name}
+                </span>
+                <span className="text-[10px] font-mono font-black text-primary tabular-nums">
+                  {contrib > 0 ? '+' : ''}{contrib.toFixed(3)}
                 </span>
               </div>
-              <div className="h-2 rounded-full overflow-hidden bg-zinc-800/80 border border-white/5">
-                <div
-                  className={`h-full rounded-full transition-all duration-700 ease-out ${
-                    isPrimary
-                      ? 'bg-gradient-to-r from-zinc-400 to-white'
-                      : isPositive
-                      ? 'bg-zinc-500'
-                      : 'bg-zinc-600'
-                  }`}
-                  style={{
-                    width: mounted ? `${width}%` : '0%',
-                    transitionDelay: `${i * 60}ms`,
-                  }}
+
+              <div className="h-1 w-full bg-primary/10 rounded-sm overflow-hidden relative">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${width}%` }}
+                  transition={{ duration: 1.5, ease: "circOut", delay: i * 0.1 }}
+                  className={`h-full bg-primary shadow-[0_0_10px_var(--primary)]`}
                 />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/30 to-transparent animate-line-move" />
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>
-      <div className="mt-4 flex items-center gap-1.5 text-xs text-zinc-500">
-        <ChevronRight className="w-3.5 h-3.5" />
-        Select an event to see drivers from the ML model
+
+      <div className="mt-10 p-5 bg-primary/5 border border-primary/10 rounded-sm relative overflow-hidden group/tip">
+        <Activity className="w-3.5 h-3.5 text-primary/40 animate-pulse mb-3" />
+        <span className="text-[9px] font-black text-primary/30 leading-[1.6] uppercase tracking-[0.2em] block">
+          Neural_Net correlation engine identifying perturbations defining identity entropy vectors.
+        </span>
       </div>
     </div>
   );

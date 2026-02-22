@@ -1,23 +1,56 @@
 import React, { useState, useEffect, useRef } from 'react';
 
+import { Activity, ShieldAlert, ShieldCheck, Lock, Zap, Target } from 'lucide-react';
+import { motion } from 'framer-motion';
+
 const iconMap = {
-  total: 'total',
-  highRisk: 'highRisk',
-  mfa: 'mfa',
-  block: 'block',
-  avgRisk: 'avgRisk',
-  confidence: 'confidence',
+  total: Activity,
+  highRisk: ShieldAlert,
+  mfa: Zap,
+  block: Lock,
+  avgRisk: Target,
+  confidence: ShieldCheck,
 };
 
 const colorMap = {
-  cyan: { icon: 'bg-cyan-500/20 border-cyan-400/40 text-cyan-400', glow: 'shadow-[0_0_20px_-2px_rgba(6,182,212,0.4)]' },
-  crimson: { icon: 'bg-red-500/20 border-red-400/40 text-red-400', glow: 'shadow-[0_0_20px_-2px_rgba(239,68,68,0.4)]' },
-  amber: { icon: 'bg-amber-500/20 border-amber-400/40 text-amber-400', glow: 'shadow-[0_0_20px_-2px_rgba(245,158,11,0.4)]' },
-  emerald: { icon: 'bg-emerald-500/20 border-emerald-400/40 text-emerald-400', glow: 'shadow-[0_0_20px_-2px_rgba(16,185,129,0.4)]' },
-  purple: { icon: 'bg-purple-500/20 border-purple-400/40 text-purple-400', glow: 'shadow-[0_0_20px_-2px_rgba(168,85,247,0.4)]' },
+  cyan: {
+    icon: 'text-accent', // --accent is cyan
+    bg: 'bg-accent/5',
+    border: 'border-accent/20',
+    glow: 'shadow-[0_0_15px_rgba(0,245,255,0.2)]',
+    accent: 'bg-accent'
+  },
+  crimson: {
+    icon: 'text-danger',
+    bg: 'bg-danger/10',
+    border: 'border-danger/20',
+    glow: 'shadow-[0_0_15px_rgba(255,0,51,0.2)]',
+    accent: 'bg-danger'
+  },
+  amber: {
+    icon: 'text-primary-soft',
+    bg: 'bg-primary-soft/10',
+    border: 'border-primary-soft/20',
+    glow: 'shadow-[0_0_15px_rgba(0,204,51,0.2)]',
+    accent: 'bg-primary-soft'
+  },
+  emerald: {
+    icon: 'text-primary',
+    bg: 'bg-primary/5',
+    border: 'border-primary/20',
+    glow: 'shadow-[0_0_15px_rgba(0,255,65,0.2)]',
+    accent: 'bg-primary'
+  },
+  purple: {
+    icon: 'text-primary-soft',
+    bg: 'bg-primary/5',
+    border: 'border-primary/20',
+    glow: 'shadow-[0_0_15px_rgba(0,255,65,0.2)]',
+    accent: 'bg-primary'
+  },
 };
 
-function useCountUp(end, duration = 800, enabled = true) {
+function useCountUp(end, duration = 1200, enabled = true) {
   const [value, setValue] = useState(0);
   const startRef = useRef(null);
 
@@ -30,8 +63,8 @@ function useCountUp(end, duration = 800, enabled = true) {
     const step = (now) => {
       const elapsed = now - startTime;
       const t = Math.min(elapsed / duration, 1);
-      const ease = 1 - Math.pow(1 - t, 2);
-      const current = start + (end - start) * ease;
+      const ease = 1 - Math.pow(1 - 2.5 * (1 - t), 2); // custom ease
+      const current = start + (end - start) * Math.max(0, Math.min(1, t));
       setValue(isDecimal ? Math.round(current * 10) / 10 : Math.round(current));
       if (t < 1) requestAnimationFrame(step);
     };
@@ -41,168 +74,63 @@ function useCountUp(end, duration = 800, enabled = true) {
   return value;
 }
 
-const StatsCardIcon = ({ variant }) => {
-  switch (variant) {
-    case 'highRisk':
-      return (
-        <svg viewBox="0 0 40 40" aria-hidden="true">
-          <defs>
-            <linearGradient id="statHighRisk" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#fed7aa" />
-              <stop offset="50%" stopColor="#fb7185" />
-              <stop offset="100%" stopColor="#f97373" />
-            </linearGradient>
-          </defs>
-          <circle cx="20" cy="20" r="18" fill="url(#statHighRisk)" />
-          <path
-            d="M20 11L10.8 28.5c-.3.6.1 1.3.8 1.3h16.7c.7 0 1.1-.7.8-1.3L20 11z"
-            fill="#111827"
-          />
-          <rect x="18.8" y="16" width="2.4" height="7.8" rx="1.1" fill="#f97373" />
-          <rect x="18.8" y="25.6" width="2.4" height="2.6" rx="1.3" fill="#f97373" />
-        </svg>
-      );
-    case 'mfa':
-      return (
-        <svg viewBox="0 0 40 40" aria-hidden="true">
-          <defs>
-            <linearGradient id="statMfa" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#facc15" />
-              <stop offset="100%" stopColor="#fb923c" />
-            </linearGradient>
-          </defs>
-          <circle cx="20" cy="20" r="18" fill="url(#statMfa)" />
-          <path
-            d="M20 10.5c-3 0-5.4 2.4-5.4 5.4v2.2H13a1.5 1.5 0 0 0-1.5 1.5v8.2A1.5 1.5 0 0 0 13 29.3h14a1.5 1.5 0 0 0 1.5-1.5v-8.2A1.5 1.5 0 0 0 27 18.1h-1.6v-2.2c0-3-2.4-5.4-5.4-5.4z"
-            fill="#111827"
-          />
-          <path
-            d="M18.1 21.4l2.3 2.3 4-4"
-            fill="none"
-            stroke="#facc15"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      );
-    case 'block':
-      return (
-        <svg viewBox="0 0 40 40" aria-hidden="true">
-          <defs>
-            <linearGradient id="statBlock" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#fecaca" />
-              <stop offset="100%" stopColor="#ef4444" />
-            </linearGradient>
-          </defs>
-          <circle cx="20" cy="20" r="18" fill="url(#statBlock)" />
-          <rect x="11.5" y="17.5" width="17" height="11" rx="2.3" fill="#111827" />
-          <path
-            d="M16.2 17.5v-2.2A3.8 3.8 0 0 1 20 11.5a3.8 3.8 0 0 1 3.8 3.8v2.2"
-            fill="none"
-            stroke="#fca5a5"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-          <circle cx="20" cy="22.5" r="1.3" fill="#fca5a5" />
-        </svg>
-      );
-    case 'avgRisk':
-      return (
-        <svg viewBox="0 0 40 40" aria-hidden="true">
-          <defs>
-            <linearGradient id="statAvg" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#c4b5fd" />
-              <stop offset="100%" stopColor="#a855f7" />
-            </linearGradient>
-          </defs>
-          <circle cx="20" cy="20" r="18" fill="url(#statAvg)" />
-          <path
-            d="M12 24.5c1.9-2.6 3.6-4 5.1-4 1.6 0 2.4 1.3 3.7 1.3 1.5 0 2.6-1.7 4.9-5.7"
-            fill="none"
-            stroke="#111827"
-            strokeWidth="2.1"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <circle cx="16" cy="15" r="1.4" fill="#111827" />
-          <circle cx="22.2" cy="17" r="1.4" fill="#111827" />
-        </svg>
-      );
-    case 'confidence':
-      return (
-        <svg viewBox="0 0 40 40" aria-hidden="true">
-          <defs>
-            <linearGradient id="statConfidence" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#5eead4" />
-              <stop offset="100%" stopColor="#22c55e" />
-            </linearGradient>
-          </defs>
-          <circle cx="20" cy="20" r="18" fill="url(#statConfidence)" />
-          <path
-            d="M14 17.5c0-3.3 2.6-6 6-6s6 2.7 6 6-2.6 8.5-6 10.9c-3.4-2.4-6-7.6-6-10.9z"
-            fill="#0b1120"
-          />
-          <path
-            d="M19.2 18.4l1.6 1.7 3.2-3.3"
-            fill="none"
-            stroke="#22c55e"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      );
-    case 'total':
-    default:
-      return (
-        <svg viewBox="0 0 40 40" aria-hidden="true">
-          <defs>
-            <linearGradient id="statTotal" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#a5b4fc" />
-              <stop offset="100%" stopColor="#38bdf8" />
-            </linearGradient>
-          </defs>
-          <circle cx="20" cy="20" r="18" fill="url(#statTotal)" />
-          <path
-            d="M13 24h3.2v-6.2L20 24h2l3.7-7.4V24H27"
-            fill="none"
-            stroke="#0b1120"
-            strokeWidth="2.1"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M13 16.6h14"
-            fill="none"
-            stroke="#0b1120"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      );
-  }
-};
-
 const StatsCard = ({ title, value, subtitle, icon = 'total', color = 'purple' }) => {
   const animate = typeof value === 'number';
-  const counted = useCountUp(animate ? value : 0, 800, animate);
+  const counted = useCountUp(animate ? value : 0, 1000, animate);
   const displayValue = animate ? counted : value;
   const suffix = animate && title && title.toLowerCase().includes('confidence') ? '%' : '';
   const theme = colorMap[color] || colorMap.purple;
+  const Icon = iconMap[icon] || iconMap.total;
 
   return (
-    <div className={`hyper-card p-4 sm:p-5 hover:scale-[1.02] group ${theme.glow}`}>
-      <div className="relative z-10">
-        <div className={`stat-icon inline-flex items-center justify-center p-2.5 rounded-xl border ${theme.icon} mb-3 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:scale-[1.05]`}>
-          <StatsCardIcon variant={iconMap[icon] || 'total'} />
+    <motion.div
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      whileHover={{ scale: 1.02 }}
+      className="relative group h-full"
+    >
+      <div className={`relative hyper-card p-6 h-full flex flex-col justify-between overflow-hidden bg-black/60 backdrop-blur-md border border-primary/20 transition-all duration-300`}>
+        {/* Cyber-Grid Pattern Overlay */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#00FF41_1px,transparent_1px)] [background-size:16px_16px]" />
+
+        {/* Animated Corner accent */}
+        <div className="absolute top-0 right-0 w-8 h-8 border-t border-r border-primary/40 rounded-tr-sm" />
+        <div className="absolute bottom-0 left-0 w-8 h-8 border-b border-l border-primary/40 rounded-bl-sm" />
+
+        <div className="flex items-start justify-between relative z-10 mb-6">
+          <div className={`p-2.5 bg-black border border-primary/20 rounded-sm`}>
+            <Icon className={`w-4 h-4 ${theme.icon} animate-flicker`} />
+          </div>
+          <div className="flex flex-col items-end">
+            <span className="text-[8px] font-black tracking-[0.2em] text-primary/40 uppercase">Secure_Node</span>
+            <div className={`w-1 h-1 bg-primary animate-pulse shadow-[0_0_10px_var(--primary)]`} />
+          </div>
         </div>
-        <div className="text-xl sm:text-2xl font-bold tracking-tight text-white">{displayValue}{suffix}</div>
-        <div className="label-upper mt-0.5 text-zinc-400">{title}</div>
-        {subtitle && <div className="text-xs text-zinc-500 mt-1">{subtitle}</div>}
+
+        <div className="relative z-10">
+          <div className="flex items-baseline gap-2">
+            <span className="text-4xl font-black tracking-tighter text-white font-mono drop-shadow-[0_0_10px_rgba(0,255,65,0.3)]">
+              {displayValue}
+            </span>
+            <span className="text-xs font-black text-primary/60 font-mono italic">{suffix}</span>
+          </div>
+          <div className="text-[10px] font-black tracking-[0.2em] text-text-secondary uppercase mt-2 group-hover:text-primary transition-colors">
+            {title}
+          </div>
+        </div>
+
+        {/* Binary stream simulation or bar */}
+        <div className="mt-4 h-1 bg-primary/5 rounded-full overflow-hidden relative">
+          <motion.div
+            className={`absolute inset-y-0 left-0 bg-primary opacity-60`}
+            initial={{ width: 0 }}
+            animate={{ width: '100%' }}
+            transition={{ duration: 1.5, ease: "circOut" }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/40 to-transparent animate-line-move" />
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

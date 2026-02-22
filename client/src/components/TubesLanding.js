@@ -3,12 +3,6 @@ import React, { useRef, useEffect, useCallback, useState } from 'react';
 const TUBES_SCRIPT = 'https://cdn.jsdelivr.net/npm/threejs-components@0.0.19/build/cursors/tubes1.min.js';
 const FADE_OUT_MS = 600;
 
-function randomColors(count) {
-  return new Array(count)
-    .fill(0)
-    .map(() => '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0'));
-}
-
 const TubesLanding = ({ onEnter }) => {
   const canvasRef = useRef(null);
   const appRef = useRef(null);
@@ -24,10 +18,10 @@ const TubesLanding = ({ onEnter }) => {
       try {
         appRef.current = TubesCursor(canvas, {
           tubes: {
-            colors: ['#f967fb', '#53bc28', '#6958d5'],
+            colors: ['#00FF41', '#00CC33', '#00FF41'],
             lights: {
-              intensity: 200,
-              colors: ['#83f36e', '#fe8a2e', '#ff008a', '#60aed5'],
+              intensity: 400,
+              colors: ['#00FF41', '#00CC33', '#00F5FF', '#00FF41'],
             },
           },
         });
@@ -75,8 +69,9 @@ const TubesLanding = ({ onEnter }) => {
     if (exiting) return;
     if (appRef.current && appRef.current.tubes) {
       try {
-        const colors = randomColors(3);
-        const lightsColors = randomColors(4);
+        // Stick to Matrix palette
+        const colors = ['#00FF41', '#00CC33', '#00F5FF'];
+        const lightsColors = ['#00FF41', '#00F5FF', '#00CC33', '#00FF41'];
         appRef.current.tubes.setColors(colors);
         appRef.current.tubes.setLightsColors(lightsColors);
       } catch (err) {
@@ -95,8 +90,8 @@ const TubesLanding = ({ onEnter }) => {
   return (
     <div
       id="app"
-      className={`fixed inset-0 w-full h-full m-0 transition-opacity duration-[600ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] ${exiting ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
-      style={{ touchAction: 'none', fontFamily: "'Montserrat', serif" }}
+      className={`fixed inset-0 w-full h-full m-0 transition-opacity duration-[800ms] ease-in-out ${exiting ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100'}`}
+      style={{ touchAction: 'none', backgroundColor: '#000' }}
     >
       <canvas
         ref={canvasRef}
@@ -106,22 +101,34 @@ const TubesLanding = ({ onEnter }) => {
         aria-hidden
       />
       <div
-        className="hero relative h-full flex flex-col items-center justify-center gap-[10px] cursor-pointer z-10"
+        className="hero relative h-full flex flex-col items-center justify-center gap-6 cursor-pointer z-10"
         onClick={handleClick}
         onKeyDown={(e) => { if (e.key === 'Enter' && !exiting) { e.preventDefault(); setExiting(true); } }}
         role="button"
         tabIndex={0}
-        aria-label="Enter PulseGuard"
+        aria-label="Initialize Secure Uplink"
       >
-        <h1 className="m-0 p-0 text-white leading-[100%] select-none text-[80px] font-bold uppercase" style={{ textShadow: '0 0 20px rgba(0,0,0,1)' }}>
-          PulseGuard
-        </h1>
-        <h2 className="m-0 p-0 text-white leading-[100%] select-none text-[60px] font-medium uppercase" style={{ textShadow: '0 0 20px rgba(0,0,0,1)' }}>
-          Identity Risk
-        </h2>
-        <span className="text-white no-underline mt-2 text-sm tracking-widest uppercase">
-          Click to enter
-        </span>
+        <div className="flex flex-col items-center text-center">
+          <div className="flex items-center gap-3 mb-6 opacity-40">
+            <div className="w-2 h-2 bg-primary animate-pulse" />
+            <span className="text-[10px] font-mono font-black tracking-[0.5em] text-primary uppercase">Secure_Uplink_v4.0</span>
+          </div>
+          <h1 className="m-0 p-0 text-white leading-[100%] select-none text-[90px] font-black uppercase tracking-tighter mix-blend-difference" style={{ fontFamily: 'var(--font-sans)', textShadow: '0 0 30px rgba(0, 255, 65, 0.4)' }}>
+            PulseGuard<span className="text-primary italic">.ai</span>
+          </h1>
+          <h2 className="m-0 p-0 text-primary leading-[100%] select-none text-[20px] font-black uppercase tracking-[0.8em] mt-6 opacity-80" style={{ fontFamily: 'var(--font-mono)' }}>
+            Adaptive_Defense_Shell
+          </h2>
+        </div>
+
+        <div className="mt-20 flex flex-col items-center gap-6 group">
+          <div className="w-12 h-[1px] bg-primary/20 relative overflow-hidden">
+            <div className="absolute inset-0 bg-primary animate-line-move" />
+          </div>
+          <span className="text-primary/40 group-hover:text-primary transition-all duration-300 no-underline text-[9px] font-black tracking-[0.4em] uppercase font-mono">
+            Execute_Bypass_Protocol
+          </span>
+        </div>
       </div>
     </div>
   );

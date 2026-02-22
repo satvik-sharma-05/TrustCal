@@ -3,9 +3,10 @@ import React from 'react';
 const UserProfile = ({ profile, events = [], selectedEvent }) => {
   if (!profile) {
     return (
-      <div className="hyper-card p-4 sm:p-6 animate-fade-in">
-        <h3 className="text-base font-semibold text-slate-200 mb-2">User Context</h3>
-        <p className="text-slate-500 text-sm">Select an event in the timeline to view user profile.</p>
+      <div className="hyper-card p-10 bg-black/80 border border-primary/20 animate-fade-in group relative overflow-hidden h-full flex flex-col justify-center items-center text-center">
+        <div className="absolute inset-0 opacity-[0.02] pointer-events-none bg-[radial-gradient(#00FF41_1px,transparent_1px)] [background-size:24px_24px]" />
+        <h3 className="text-[9px] font-black tracking-[0.5em] text-primary/40 uppercase mb-8 absolute top-8 left-8">Identity_Context</h3>
+        <p className="text-primary/20 text-[10px] uppercase font-black tracking-[0.4em] animate-pulse">Select telemetric signal to decode...</p>
       </div>
     );
   }
@@ -15,58 +16,60 @@ const UserProfile = ({ profile, events = [], selectedEvent }) => {
     : 0;
 
   return (
-    <div className="hyper-card p-4 sm:p-6 animate-fade-in">
-      <h3 className="text-base font-semibold text-slate-200 mb-4">User Profile</h3>
-      <div className="space-y-4 text-sm">
+    <div className="hyper-card p-10 bg-black/80 border border-primary/20 animate-fade-in group relative overflow-hidden">
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none bg-[radial-gradient(#00FF41_1px,transparent_1px)] [background-size:24px_24px]" />
+      <h3 className="text-[10px] font-black tracking-[0.4em] text-primary/80 uppercase mb-10 relative z-10">Neural_Profile</h3>
+
+      <div className="space-y-10 text-sm relative z-10">
         <div>
-          <div className="label-upper mb-0.5">User ID</div>
-          <div className="font-mono text-slate-300 text-xs truncate">{profile.userId}</div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <div className="label-upper mb-0.5">Avg login hour</div>
-            <div className="font-medium text-slate-200">{Math.round(profile.avgLoginHour ?? 12)}:00</div>
-          </div>
-          <div>
-            <div className="label-upper mb-0.5">Total logins</div>
-            <div className="font-medium text-slate-200">{profile.totalLogins ?? 0}</div>
+          <div className="text-[9px] font-black text-primary/40 uppercase tracking-[0.3em] mb-3">Signature_Entity</div>
+          <div className="font-mono text-primary text-[11px] truncate bg-black border border-primary/20 p-4 rounded-sm">
+            {profile.userId}
           </div>
         </div>
+
+        <div className="grid grid-cols-2 gap-6">
+          <div className="p-5 bg-primary/5 border border-primary/10 rounded-sm">
+            <div className="text-[9px] font-black text-primary/40 uppercase tracking-[0.2em] mb-2">Peak_Freq</div>
+            <div className="font-mono font-black text-primary text-lg tracking-tight">{Math.round(profile.avgLoginHour ?? 12)}:00_UTC</div>
+          </div>
+          <div className="p-5 bg-primary/5 border border-primary/10 rounded-sm">
+            <div className="text-[9px] font-black text-primary/40 uppercase tracking-[0.2em] mb-2">Log_Count</div>
+            <div className="font-mono font-black text-primary text-lg">{profile.totalLogins ?? 0}</div>
+          </div>
+        </div>
+
         <div>
-          <div className="label-upper mb-1">Known regions ({profile.knownRegions?.length ?? 0})</div>
-          <div className="flex flex-wrap gap-1">
+          <div className="text-[9px] font-black text-primary/40 uppercase tracking-[0.3em] mb-4">Geo_Cluster_Mapping</div>
+          <div className="flex flex-wrap gap-3">
             {(profile.knownRegions ?? []).slice(0, 5).map((r, i) => (
-              <span
-                key={i}
-                className="px-2 py-0.5 rounded recessed-input text-slate-400 text-xs"
-              >
+              <span key={i} className="px-3 py-1.5 bg-black border border-primary/30 text-primary text-[9px] font-mono font-black uppercase tracking-widest group-hover:bg-primary/5 transition-colors">
                 {r}
               </span>
             ))}
           </div>
         </div>
+
         <div>
-          <div className="label-upper mb-1">Known devices ({profile.knownDevices?.length ?? 0})</div>
-          <div className="flex flex-wrap gap-1">
+          <div className="text-[9px] font-black text-primary/40 uppercase tracking-[0.3em] mb-4">Device_Signatures</div>
+          <div className="flex flex-wrap gap-2">
             {(profile.knownDevices ?? []).slice(0, 5).map((d, i) => (
-              <span
-                key={i}
-                className="px-2 py-0.5 rounded recessed-input font-mono text-slate-400 text-xs"
-              >
-                {String(d).slice(0, 8)}…
+              <span key={i} className="px-3 py-1.5 bg-black border border-primary/10 font-mono text-primary/40 text-[8px] uppercase">
+                {String(d).slice(0, 16)}...
               </span>
             ))}
           </div>
         </div>
+
         {events.length > 0 && (
-          <div>
-            <div className="label-upper mb-0.5">Average risk</div>
+          <div className="pt-8 border-t border-primary/10">
+            <div className="text-[9px] font-black text-primary/40 uppercase tracking-[0.3em] mb-3">Identity_Entropy_Index</div>
             <div
-              className={`text-lg font-light ${
-                avgRisk > 70 ? 'text-crimson' : avgRisk > 30 ? 'text-amber' : 'text-emerald'
-              }`}
+              className={`text-5xl font-mono font-black tracking-tighter ${avgRisk > 70 ? 'text-danger' : avgRisk > 30 ? 'text-[#FFCC00]' : 'text-primary'
+                }`}
             >
-              {Math.round(avgRisk)}/100
+              {Math.round(avgRisk)}
+              <span className="text-xs ml-2 opacity-30">/100</span>
             </div>
           </div>
         )}

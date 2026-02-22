@@ -33,15 +33,16 @@ const LoginTimeline = ({ events = [], onEventClick, selectedEvent, searchQuery, 
   };
 
   const getDecisionBadge = (decision) => {
+    const baseClass = "px-3 py-1 rounded-sm text-[9px] font-black uppercase tracking-[0.2em] border transition-all duration-300";
     switch (decision) {
       case 'allow':
-        return <span className="text-zinc-300 text-sm font-medium">Allow</span>;
+        return <span className={`${baseClass} text-primary border-primary/40 bg-primary/5 shadow-[0_0_10px_rgba(0,255,65,0.1)]`}>ACCESS_GRANTED</span>;
       case 'mfa':
-        return <span className="text-zinc-400 text-sm font-medium">MFA</span>;
+        return <span className={`${baseClass} text-accent border-accent/40 bg-accent/5 shadow-[0_0_10px_rgba(0,245,255,0.1)] animate-pulse`}>MFA_CHALLENGE</span>;
       case 'block':
-        return <span className="text-zinc-200 text-sm font-medium">Block</span>;
+        return <span className={`${baseClass} text-danger border-danger/40 bg-danger/5 shadow-[0_0_10px_rgba(255,0,51,0.1)] animate-flicker`}>ISOLATION_ENFORCED</span>;
       default:
-        return <span className="text-zinc-500 text-sm">—</span>;
+        return <span className="text-primary/20">—</span>;
     }
   };
 
@@ -90,102 +91,109 @@ const LoginTimeline = ({ events = [], onEventClick, selectedEvent, searchQuery, 
   const hasMore = sortedEvents.length > visibleCount;
 
   return (
-    <div className="hyper-card overflow-hidden animate-fade-in">
-      <div className="px-4 sm:px-6 py-4 border-b border-white/5 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h3 className="text-base font-semibold text-white">Recent Activity</h3>
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative flex-1 sm:flex-initial min-w-[140px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+    <div className="hyper-card overflow-hidden bg-black/80 backdrop-blur-md border border-primary/20 shadow-2xl relative">
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[linear-gradient(rgba(0,255,65,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,65,0.1)_1px,transparent_1px)] [background-size:32px_32px]" />
+
+      <div className="px-8 py-6 border-b border-primary/10 relative z-10">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="w-1.5 h-1.5 bg-primary animate-pulse" />
+            <h3 className="text-[10px] font-black tracking-[0.4em] text-primary/60 uppercase">Intelligence_Feed</h3>
+          </div>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="relative group min-w-[280px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary/30 group-focus-within:text-primary transition-all" />
               <input
                 type="text"
                 value={localSearch}
                 onChange={handleSearch}
-                placeholder="Search user, email, region..."
-                className="w-full sm:w-48 pl-9 pr-3 py-2 rounded-lg recessed-input text-slate-200 text-sm placeholder-slate-500 focus:border-purple"
+                placeholder="QUERY_IDENTITY..."
+                className="w-full pl-10 pr-4 py-2.5 bg-black border border-primary/10 rounded-sm text-primary text-[11px] font-mono placeholder-primary/20 focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/10 transition-all font-black"
               />
             </div>
             <select
               value={decisionFilter || ''}
               onChange={(e) => onDecisionFilter?.(e.target.value || '')}
-              className="px-3 py-2 rounded-lg recessed-input text-slate-300 text-sm bg-navy-mid/50"
+              className="px-4 py-2.5 bg-black border border-primary/10 rounded-sm text-primary/60 font-mono text-[10px] font-black focus:outline-none focus:border-primary/40 transition-all appearance-none cursor-pointer uppercase tracking-widest"
             >
-              <option value="">All decisions</option>
-              <option value="allow">Allow</option>
-              <option value="mfa">MFA</option>
-              <option value="block">Block</option>
+              <option value="">ALL_PROTOCOLS</option>
+              <option value="allow" className="bg-black">ALLOW</option>
+              <option value="mfa" className="bg-black">MFA</option>
+              <option value="block" className="bg-black">BLOCK</option>
             </select>
             <button
               onClick={() => setSortBy(sortBy === 'time' ? 'risk' : 'time')}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg glass-pill text-slate-400 hover:text-white text-sm transition-all"
+              className="flex items-center gap-3 px-6 py-2.5 bg-black border border-primary/10 rounded-sm text-primary/40 hover:text-primary text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:border-primary/30"
             >
-              <ArrowUpDown className="w-4 h-4" />
-              {sortBy === 'time' ? 'Time' : 'Risk'}
+              <ArrowUpDown className="w-3.5 h-3.5" />
+              {sortBy === 'time' ? 'TIME_PRIORITY' : 'RISK_PRIORITY'}
             </button>
           </div>
         </div>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[500px]">
+
+      <div className="overflow-x-auto relative z-10">
+        <table className="w-full text-xs min-w-[600px] border-collapse">
           <thead>
-            <tr className="border-b border-white/5">
-              <th className="text-left py-3 px-4 sm:px-6 label-upper">User</th>
-              <th className="text-left py-3 px-4 sm:px-6 label-upper">Time</th>
-              <th className="text-left py-3 px-4 sm:px-6 label-upper">Region</th>
-              <th className="text-left py-3 px-4 sm:px-6 label-upper hidden md:table-cell">Device</th>
-              <th className="text-left py-3 px-4 sm:px-6 label-upper">Risk</th>
-              <th className="text-left py-3 px-4 sm:px-6 label-upper hidden sm:table-cell">Anomaly</th>
-              <th className="text-left py-3 px-4 sm:px-6 label-upper">Decision</th>
+            <tr className="border-b border-primary/10 bg-primary/5">
+              <th className="text-left py-5 px-8 font-black tracking-[0.2em] text-primary/40 uppercase text-[9px]">Identity_Entity</th>
+              <th className="text-left py-5 px-8 font-black tracking-[0.2em] text-primary/40 uppercase text-[9px]">Timestamp</th>
+              <th className="text-left py-5 px-8 font-black tracking-[0.2em] text-primary/40 uppercase text-[9px]">Geo_Zone</th>
+              <th className="text-left py-5 px-8 font-black tracking-[0.2em] text-primary/40 uppercase text-[9px] hidden md:table-cell">Device_Mask</th>
+              <th className="text-left py-5 px-8 font-black tracking-[0.2em] text-primary/40 uppercase text-[9px]">Anom_Ratio</th>
+              <th className="text-left py-5 px-8 font-black tracking-[0.2em] text-primary/40 uppercase text-[9px]">Outcome</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-primary/5">
             {visibleEvents.length === 0 ? (
               <tr>
-                <td colSpan={7} className="py-12 text-center text-slate-500 text-sm">
-                  No events yet. Use &quot;Evaluate Login&quot; to add one.
+                <td colSpan={7} className="py-24 text-center text-primary/20 text-[10px] font-black tracking-[0.5em] uppercase animate-pulse">
+                  No telemetric signals detected
                 </td>
               </tr>
             ) : (
               visibleEvents.map((event, index) => {
                 const risk = event.riskScore ?? 0;
                 const selected = isSelected(event);
-                const anomaly = event.anomalyScore != null ? (event.anomalyScore * 100).toFixed(1) : '—';
                 return (
                   <tr
                     key={event._id || index}
                     onClick={() => onEventClick?.(event)}
-                    className={`border-b border-white/5 cursor-pointer transition-all duration-200 hover:bg-white/5 ${
-                      selected ? 'bg-purple/10' : ''
-                    }`}
+                    className={`group cursor-pointer transition-all duration-300 border-l-2 ${selected ? 'bg-primary/10 border-primary' : 'hover:bg-primary/5 border-transparent'} relative`}
                   >
-                    <td className="py-3 px-4 sm:px-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple/30 to-pink/20 flex items-center justify-center text-white font-semibold text-sm shrink-0">
+                    <td className="py-6 px-8">
+                      <div className="flex items-center gap-5">
+                        <div className="w-12 h-12 rounded-sm bg-black border border-primary/30 flex items-center justify-center text-primary font-mono font-black text-xs shadow-inner shadow-primary/5 group-hover:border-primary transition-all">
                           {getInitials(event)}
                         </div>
                         <div>
-                          <div className="font-medium text-white truncate max-w-[100px] sm:max-w-[140px]">
+                          <div className="font-black text-white font-mono truncate max-w-[140px] transition-colors group-hover:text-primary">
                             {getDisplayName(event)}
                           </div>
-                          <div className="text-xs text-slate-500 truncate max-w-[100px] sm:max-w-[140px]">
-                            {event.email || event.userType || '—'}
+                          <div className="text-[10px] text-primary/40 font-black tracking-widest truncate max-w-[140px] uppercase mt-0.5">
+                            {event.userType || 'GUEST_ENTITY'}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="py-3 px-4 sm:px-6">
-                      <div className="text-slate-300 font-mono text-xs">{formatTime(event.timestamp || event.createdAt)}</div>
-                      <div className="text-[10px] text-slate-500 hidden lg:block">{formatDate(event.timestamp || event.createdAt)}</div>
+                    <td className="py-6 px-8">
+                      <div className="text-white font-mono text-[11px] font-black tracking-widest">{formatTime(event.timestamp || event.createdAt)}</div>
                     </td>
-                    <td className="py-3 px-4 sm:px-6 text-slate-400">{event.region || '—'}</td>
-                    <td className="py-3 px-4 sm:px-6 text-slate-400 text-xs hidden md:table-cell">{event.deviceType || '—'}</td>
-                    <td className="py-3 px-4 sm:px-6">
-                      <span className="font-semibold text-zinc-300">
-                        {risk}/100
-                      </span>
+                    <td className="py-6 px-8 text-primary/60 font-black font-mono tracking-widest">{event.region || 'UNKNOWN'}</td>
+                    <td className="py-6 px-8 text-primary/30 font-mono text-[10px] hidden md:table-cell uppercase tracking-tighter">{event.deviceType || '—'}</td>
+                    <td className="py-6 px-8">
+                      <div className="flex items-center gap-4">
+                        <div className="flex flex-col gap-1 flex-1 min-w-[60px]">
+                          <div className="h-0.5 bg-primary/10 w-full rounded-full overflow-hidden">
+                            <div className="h-full bg-primary shadow-[0_0_8px_rgba(0,255,65,0.6)]" style={{ width: `${risk}%` }} />
+                          </div>
+                        </div>
+                        <span className="font-mono font-black text-white text-[13px] drop-shadow-[0_0_5px_rgba(255,255,255,0.2)]">
+                          {risk}
+                        </span>
+                      </div>
                     </td>
-                    <td className="py-3 px-4 sm:px-6 text-slate-400 text-xs hidden sm:table-cell">{anomaly}%</td>
-                    <td className="py-3 px-4 sm:px-6">{getDecisionBadge(event.decision)}</td>
+                    <td className="py-6 px-8">{getDecisionBadge(event.decision)}</td>
                   </tr>
                 );
               })
@@ -193,28 +201,27 @@ const LoginTimeline = ({ events = [], onEventClick, selectedEvent, searchQuery, 
           </tbody>
         </table>
       </div>
-      {hasMore && (
-        <div className="px-4 sm:px-6 py-3 border-t border-white/5">
+
+      <div className="px-8 py-5 border-t border-primary/10 bg-black flex justify-center items-center gap-6">
+        {hasMore && (
           <button
             onClick={() => setExpanded(true)}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-lg glass-pill text-slate-400 hover:text-white text-sm transition-all"
+            className="flex-1 max-w-sm flex items-center justify-center gap-4 py-3 bg-black border border-primary/20 text-primary/60 hover:text-primary hover:border-primary/60 text-[10px] font-black uppercase tracking-[0.3em] transition-all hover:bg-primary/5"
           >
             <ChevronDown className="w-4 h-4" />
-            Show {sortedEvents.length - visibleCount} more
+            Synchronize_Entity_Stream ({sortedEvents.length - visibleCount})
           </button>
-        </div>
-      )}
-      {expanded && sortedEvents.length > INITIAL_ROWS && (
-        <div className="px-4 sm:px-6 py-3 border-t border-white/5">
+        )}
+        {expanded && (
           <button
             onClick={() => setExpanded(false)}
-            className="w-full flex items-center justify-center gap-2 py-2 rounded-lg glass-pill text-slate-400 hover:text-white text-sm"
+            className="flex-1 max-w-sm flex items-center justify-center gap-4 py-3 bg-black border border-primary/20 text-primary/60 hover:text-primary hover:border-primary/60 text-[10px] font-black uppercase tracking-[0.3em] transition-all hover:bg-primary/5"
           >
             <ChevronUp className="w-4 h-4" />
-            Collapse
+            Terminate_Telemetry_View
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

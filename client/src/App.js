@@ -1,21 +1,32 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { io } from 'socket.io-client';
-import { Shield, WifiOff, Menu } from 'lucide-react';
-import TubesLanding from './components/TubesLanding';
-import ShaderBackground from './components/ui/ShaderBackground';
-import BottomNavBar from './components/ui/BottomNavBar';
 import { motion } from 'framer-motion';
-import ScrollReveal from './components/ScrollReveal';
+import { io } from 'socket.io-client';
+import { Shield, WifiOff, Menu, Activity, Cpu, Clock } from 'lucide-react';
+import { getStats, getEvents, getUserProfile, getMLStatus } from './services/api';
+
+import MatrixRain from './components/MatrixRain';
 import StatsCard from './components/StatsCard';
-import LoginTimeline from './components/LoginTimeline';
 import RiskChart, { DecisionChart } from './components/RiskChart';
-import UserProfile from './components/UserProfile';
-import CustomLoginForm from './components/CustomLoginForm';
-import FeatureImportance from './components/FeatureImportance';
 import AnomalyDistribution from './components/AnomalyDistribution';
 import ResultsGauge from './components/ResultsGauge';
 import BackendInfo from './components/BackendInfo';
-import { getStats, getEvents, getUserProfile, getMLStatus } from './services/api';
+import FeatureImportance from './components/FeatureImportance';
+import UserProfile from './components/UserProfile';
+import LoginTimeline from './components/LoginTimeline';
+import CustomLoginForm from './components/CustomLoginForm';
+import TubesLanding from './components/TubesLanding';
+
+// Helper for scroll animations
+const ScrollReveal = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ duration: 0.6 }}
+  >
+    {children}
+  </motion.div>
+);
 
 function App() {
   const [stats, setStats] = useState(null);
@@ -30,6 +41,7 @@ function App() {
   const [eventSearch, setEventSearch] = useState('');
   const [eventDecision, setEventDecision] = useState('');
   const [hasEntered, setHasEntered] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const searchDebounceRef = useRef(null);
   const socketRef = useRef(null);
   const filtersRef = useRef({ search: '', decision: '' });
@@ -92,8 +104,11 @@ function App() {
       fetchData();
     });
     socketRef.current = socket;
+    const timeInterval = setInterval(() => setCurrentTime(new Date()), 1000);
+
     return () => {
       clearInterval(interval);
+      clearInterval(timeInterval);
       socket.off('new_login');
       socket.disconnect();
     };
@@ -121,30 +136,27 @@ function App() {
 
   if (loading && !stats && hasEntered) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-navy-base">
-        <div className="text-center animate-fade-in">
-          <div className="w-14 h-14 rounded-full border-2 border-zinc-500/50 border-t-zinc-400 animate-spin mx-auto mb-4" />
-          <div className="text-zinc-400 font-medium">Loading PulseGuard...</div>
+      <div className="min-h-screen flex items-center justify-center bg-black matrix-theme">
+        <MatrixRain />
+        <div className="text-center animate-fade-in relative z-10">
+          <div className="w-16 h-16 border-t-2 border-primary animate-spin mx-auto mb-6 shadow-[0_0_15px_rgba(0,255,65,0.4)]" />
+          <div className="text-primary font-mono uppercase tracking-[0.3em] text-xs animate-flicker">Decoding Digital Identity...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen relative robotic-theme transition-colors duration-500 ${hasEntered ? 'bg-transparent' : 'bg-navy-base'}`}>
-      {/* Entering screen: Tubes cursor + PulseGuard hero */}
+    <div className={`min-h-screen relative matrix-theme transition-colors duration-500 bg-black`}>
+      <MatrixRain />
+      <div className="scanline-overlay" />
+
+      {/* Entering screen */}
       {!hasEntered && (
         <TubesLanding onEnter={() => setHasEntered(true)} />
       )}
 
-      {/* Dashboard: full-screen shader background — reduced opacity so it's subtle */}
-      {hasEntered && (
-        <div className="fixed inset-0 z-0 overflow-hidden opacity-[0.35]">
-          <ShaderBackground />
-        </div>
-      )}
-
-      {/* Site content: smooth fade in after enter */}
+      {/* Site content */}
       <div
         className={`relative z-10 min-h-screen transition-opacity duration-[1000ms] ease-[cubic-bezier(0.25,0.1,0.25,1)] ${hasEntered ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       >
@@ -155,162 +167,205 @@ function App() {
           </div>
         )}
 
-        {/* Header - black/grey/white cybersecurity */}
-      <header className="relative z-20 backdrop-blur-xl bg-zinc-950/95 border-b border-white/10 px-4 sm:px-6 py-3 sticky top-0 shadow-lg shadow-black/20 font-display transition-colors duration-300">
-        <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-4">
-          <motion.div
-            className="flex items-center gap-2 sm:gap-3"
-            whileHover={{ scale: 1.03 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 18 }}
-          >
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center bg-white/5 border border-white/10 shadow-[0_0_16px_rgba(34,197,94,0.35)]">
-              <Shield className="w-5 h-5 text-emerald-400" />
-            </div>
-            <span className="text-base sm:text-lg font-bold text-white tracking-wider">PULSEGUARD</span>
-          </motion.div>
-
-          <div className="hidden md:flex flex-1 justify-center">
-            <BottomNavBar className="bg-zinc-900/80 border-white/10" />
-          </div>
-          <div className="flex items-center gap-2 sm:gap-4">
-            {mlStatus.modelLoaded && (
-              <span className="hidden sm:inline text-xs text-zinc-300 font-mono px-2 py-1 rounded border border-white/10 bg-white/5 tracking-wider">
-                SYSTEM READY
-              </span>
-            )}
-            <button
-              onClick={() => setShowNewEval(true)}
-              className="px-5 py-2.5 rounded-lg bg-white/10 hover:bg-white/15 text-white font-mono text-xs font-medium tracking-wider uppercase border border-white/10 transition-all duration-300 hover:scale-105 active:scale-95"
+        {/* Header - Matrix Command Center */}
+        <header className="relative z-30 backdrop-blur-sm bg-black/80 border-b border-primary/10 px-4 sm:px-6 py-4 sticky top-0 shadow-lg shadow-primary/5 font-mono transition-all duration-300">
+          <div className="max-w-[1600px] mx-auto flex items-center justify-between gap-4">
+            <motion.div
+              className="flex items-center gap-4 group cursor-pointer"
+              whileHover={{ scale: 1.01 }}
             >
-              Evaluate Login
-            </button>
-            <button
-              onClick={() => setNavOpen(!navOpen)}
-              className="md:hidden p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition-colors duration-300"
-            >
-              <Menu className="w-6 h-6" />
-            </button>
-          </div>
-        </div>
-        {navOpen && (
-          <div className="md:hidden mt-3 pt-3 border-t border-white/10 flex flex-col gap-3 animate-fade-in font-mono text-xs tracking-wider uppercase">
-            <a href="#analytics" onClick={() => setNavOpen(false)} className="px-4 py-2 rounded-lg text-zinc-300 hover:text-white hover:bg-white/5 transition-colors duration-300">Analytics</a>
-            <a href="#events" onClick={() => setNavOpen(false)} className="px-4 py-2 rounded-lg text-zinc-300 hover:text-white hover:bg-white/5 transition-colors duration-300">Events</a>
-          </div>
-        )}
-      </header>
-
-      {/* Dashboard panel - semi-transparent so shader background shows through */}
-      <main className="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-6 py-8 sm:py-10 dashboard-panel dashboard-panel-shader">
-        {/* 1. Stats cards - top */}
-        <section id="analytics" className="mb-8 sm:mb-10 scroll-mt-24">
-          <ScrollReveal>
-            <h2 className="text-2xl sm:text-3xl font-display font-bold tracking-wide text-white mb-5 sm:mb-6">DASHBOARD</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 stagger">
-            <StatsCard title="Total logins" value={stats?.totalLogins ?? 0} icon="total" color="cyan" />
-            <StatsCard title="High risk" value={stats?.highRiskCount ?? 0} icon="highRisk" color="crimson" />
-            <StatsCard title="MFA required" value={stats?.decisions?.mfa ?? 0} icon="mfa" color="amber" />
-            <StatsCard title="Blocked" value={stats?.decisions?.block ?? 0} icon="block" color="crimson" />
-            <StatsCard title="Avg risk" value={stats?.avgRisk?.toFixed(1) ?? '0.0'} icon="avgRisk" color="purple" />
-            <StatsCard title="Confidence" value={mlStatus.modelLoaded && mlStatus.confidence != null ? mlStatus.confidence : '—'} icon="confidence" color="emerald" />
-            </div>
-          </ScrollReveal>
-        </section>
-
-        {/* 2. Analytics charts + AI panel + gauge */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 mb-8 sm:mb-10">
-          <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
-            <RiskChart data={stats?.recentEvents ?? []} type="area" />
-          </div>
-          <div className="animate-fade-in" style={{ animationDelay: '0.15s' }}>
-            <AnomalyDistribution events={events} />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6 mb-8 sm:mb-10">
-          <div className="lg:col-span-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <div className="hyper-card p-6 sm:p-8 flex flex-col items-center justify-center min-h-[280px] sm:min-h-[320px]">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-4 sm:mb-6 animate-breathe">
-                <span className="text-xl sm:text-2xl font-bold text-white">ML</span>
+              <div className="relative">
+                <div className="w-10 h-10 rounded-sm flex items-center justify-center bg-black border border-primary animate-flicker">
+                  <Shield className="w-6 h-6 text-primary" />
+                </div>
+                <div className="absolute -inset-1 bg-primary/20 blur-md rounded-sm animate-pulse" />
               </div>
-              <h3 className="text-lg sm:text-xl font-semibold text-white mb-1 sm:mb-2">Identity Risk Assistant</h3>
-              <p className="text-zinc-500 text-xs sm:text-sm text-center mb-4 sm:mb-6 max-w-xs">
-                ML-only: Isolation Forest anomaly detection. No rule-based logic.
-              </p>
-              <button
+              <div className="flex flex-col">
+                <span className="text-xl font-black tracking-tighter text-primary glitch-hover">
+                  PULSEGUARD AI
+                </span>
+                <span className="text-[8px] font-bold text-primary/40 uppercase tracking-[0.4em]">
+                  Adaptive Access Intelligence
+                </span>
+              </div>
+            </motion.div>
+
+            <div className="hidden lg:flex items-center gap-10 text-[10px] font-black uppercase tracking-[0.2em]">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                <span className="text-primary/60">System:</span>
+                <span className="text-white">Active</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Cpu className="w-3.5 h-3.5 text-primary/40" />
+                <span className="text-primary/60">Kernel:</span>
+                <span className="text-white">v{String(mlStatus.modelVersion || '4.0').slice(0, 8)}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock className="w-3.5 h-3.5 text-primary/40" />
+                <span className="text-white font-mono">{currentTime.toLocaleTimeString()}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <motion.button
+                whileHover={{ scale: 1.05, boxShadow: "0 0 15px rgba(0, 255, 65, 0.4)" }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setShowNewEval(true)}
-                className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg bg-white/10 hover:bg-white/15 text-white font-mono text-xs font-medium tracking-wider uppercase border border-white/10 transition-all duration-300 hover:scale-105 active:scale-95"
+                className="px-6 py-2.5 rounded-sm bg-black border border-primary text-primary font-black text-[10px] tracking-widest uppercase hover:bg-primary/10 transition-all duration-300"
               >
-                Evaluate Login
+                Execute Audit
+              </motion.button>
+              <button
+                onClick={() => setNavOpen(!navOpen)}
+                className="md:hidden p-2 rounded-sm text-primary/60 hover:text-primary transition-colors duration-300"
+              >
+                <Menu className="w-6 h-6" />
               </button>
             </div>
           </div>
-          <div className="animate-fade-in" style={{ animationDelay: '0.25s' }}>
-            <ResultsGauge riskScore={currentRiskScore} decision={currentDecision} stats={stats} />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6 mb-8 sm:mb-10">
-          <div className="lg:col-span-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-            <DecisionChart stats={stats?.decisions ?? {}} />
-          </div>
-          <div className="animate-fade-in" style={{ animationDelay: '0.35s' }}>
-            <BackendInfo mlStatus={mlStatus} />
-          </div>
-        </div>
-
-        {/* 3. Feature contribution + User profile */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 mb-8 sm:mb-10">
-          {selectedEvent?.explanation?.topContributingFeatures?.length > 0 || selectedEvent?.topFeatures?.length > 0 ? (
-            <FeatureImportance
-              features={selectedEvent.explanation?.topContributingFeatures || selectedEvent.topFeatures || []}
-            />
-          ) : (
-            <div className="hyper-card p-5 sm:p-6 animate-fade-in">
-              <h3 className="text-base font-semibold text-white mb-2">Anomaly Drivers</h3>
-              <p className="text-sm text-zinc-500">Select an event below to view ML-derived top contributing features.</p>
-            </div>
+          {navOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="md:hidden mt-4 pt-4 border-t border-primary/10 flex flex-col gap-4 font-black text-xs tracking-[0.2em] uppercase text-primary/60"
+            >
+              <a href="#analytics" onClick={() => setNavOpen(false)} className="hover:text-primary transition-all px-4">Analytics</a>
+              <a href="#events" onClick={() => setNavOpen(false)} className="hover:text-primary transition-all px-4">Intelligence Feed</a>
+            </motion.div>
           )}
-          <UserProfile profile={userProfile?.profile} events={userProfile?.recentEvents ?? []} selectedEvent={selectedEvent} />
-        </div>
+        </header>
 
-        {/* 4. Recent Activity - at bottom */}
-        <section id="events" className="mb-10 scroll-mt-24">
-          <LoginTimeline
-            events={events}
-            onEventClick={handleEventClick}
-            selectedEvent={selectedEvent}
-            searchQuery={eventSearch}
-            onSearch={handleEventSearch}
-            decisionFilter={eventDecision}
-            onDecisionFilter={handleEventDecisionFilter}
-          />
-        </section>
-      </main>
+        {/* Dashboard panel - semi-transparent glass container */}
+        <main className="relative z-10 max-w-[1600px] mx-auto px-4 sm:px-6 py-8 sm:py-10">
+          <section id="analytics" className="mb-8 sm:mb-10 scroll-mt-24">
+            <ScrollReveal>
+              <div className="flex items-center gap-4 mb-10">
+                <h2 className="text-4xl font-black tracking-tighter text-white">COMMAND_CENTER</h2>
+                <div className="h-[1px] flex-1 bg-gradient-to-r from-primary/20 to-transparent" />
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 stagger">
+                <StatsCard title="Total logins" value={stats?.totalLogins ?? 0} icon="total" color="cyan" />
+                <StatsCard title="High risk" value={stats?.highRiskCount ?? 0} icon="highRisk" color="crimson" />
+                <StatsCard title="MFA required" value={stats?.decisions?.mfa ?? 0} icon="mfa" color="amber" />
+                <StatsCard title="Blocked" value={stats?.decisions?.block ?? 0} icon="block" color="crimson" />
+                <StatsCard title="Avg risk" value={stats?.avgRisk?.toFixed(1) ?? '0.0'} icon="avgRisk" color="purple" />
+                <StatsCard title="Confidence" value={mlStatus.modelLoaded && mlStatus.confidence != null ? mlStatus.confidence : '—'} icon="confidence" color="emerald" />
+              </div>
+            </ScrollReveal>
+          </section>
 
-      {showNewEval && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
-          onClick={() => setShowNewEval(false)}
-        >
-          <div
-            className="rounded-xl border border-white/10 bg-zinc-900/95 backdrop-blur-xl p-5 sm:p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto animate-scale-in shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex justify-between items-center mb-4 sm:mb-6">
-              <h2 className="text-lg font-semibold text-white">New Login Evaluation</h2>
-              <button onClick={() => setShowNewEval(false)} className="text-slate-400 hover:text-white text-2xl leading-none">×</button>
+          {/* 2. Analytics charts + AI panel + gauge */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 mb-8 sm:mb-10">
+            <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
+              <RiskChart data={stats?.recentEvents ?? []} type="area" />
             </div>
-            <CustomLoginForm onEvaluate={handleEvaluate} backendOnline={backendOnline} embedded />
+            <div className="animate-fade-in" style={{ animationDelay: '0.15s' }}>
+              <AnomalyDistribution events={events} />
+            </div>
           </div>
-        </div>
-      )}
 
-      <footer className="relative z-20 backdrop-blur-xl bg-zinc-950/90 border-t border-white/10 py-5 mt-10 sm:mt-12 shadow-[0_-4px_24px_rgba(0,0,0,0.2)] font-mono transition-colors duration-300">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 text-center text-zinc-500 text-xs sm:text-sm tracking-wider">
-          PULSEGUARD — ISOLATION FOREST • 13 FEATURES • PRIVACY-PRESERVING SIMULATED LOGS
-        </div>
-      </footer>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6 mb-8 sm:mb-10">
+            <div className="lg:col-span-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+              <div className="hyper-card p-12 flex flex-col items-center justify-center min-h-[340px] bg-black/80 border border-primary/20 relative overflow-hidden group">
+                <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#00FF41_1px,transparent_1px)] [background-size:20px_20px]" />
+                <div className="absolute top-0 right-0 p-10 opacity-[0.03] group-hover:scale-105 transition-transform duration-1000">
+                  <Shield size={200} className="text-primary" />
+                </div>
+                <div className="relative w-20 h-20 rounded-sm bg-black border border-primary/40 flex items-center justify-center mb-8">
+                  <div className="absolute inset-2 border border-primary/20 flex items-center justify-center">
+                    <span className="text-xl font-black text-primary font-mono">AI</span>
+                  </div>
+                </div>
+                <h3 className="text-3xl font-black text-white mb-3">Adaptive_Defense_AI</h3>
+                <p className="text-primary/40 text-[10px] font-black tracking-[0.3em] text-center mb-10 max-w-sm uppercase">
+                  Real-time Neural correlation • Zero-Trust isolation
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowNewEval(true)}
+                  className="px-10 py-4 bg-black border border-primary text-primary font-black text-[10px] tracking-[0.4em] uppercase transition-all hover:bg-primary/10"
+                >
+                  INITIALIZE_AUDIT
+                </motion.button>
+              </div>
+            </div>
+            <div className="animate-fade-in" style={{ animationDelay: '0.25s' }}>
+              <ResultsGauge riskScore={currentRiskScore} decision={currentDecision} stats={stats} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6 mb-8 sm:mb-10">
+            <div className="lg:col-span-2 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+              <DecisionChart stats={stats?.decisions ?? {}} />
+            </div>
+            <div className="animate-fade-in" style={{ animationDelay: '0.35s' }}>
+              <BackendInfo mlStatus={mlStatus} />
+            </div>
+          </div>
+
+          {/* 3. Feature contribution + User profile */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 mb-8 sm:mb-10">
+            {selectedEvent?.explanation?.topContributingFeatures?.length > 0 || selectedEvent?.topFeatures?.length > 0 ? (
+              <FeatureImportance
+                features={selectedEvent.explanation?.topContributingFeatures || selectedEvent.topFeatures || []}
+              />
+            ) : (
+              <div className="hyper-card p-5 sm:p-6 animate-fade-in">
+                <h3 className="text-base font-semibold text-white mb-2">Anomaly Drivers</h3>
+                <p className="text-sm text-zinc-500">Select an event below to view ML-derived top contributing features.</p>
+              </div>
+            )}
+            <UserProfile profile={userProfile?.profile} events={userProfile?.recentEvents ?? []} selectedEvent={selectedEvent} />
+          </div>
+
+          {/* 4. Recent Activity - at bottom */}
+          <section id="events" className="mb-10 scroll-mt-24">
+            <LoginTimeline
+              events={events}
+              onEventClick={handleEventClick}
+              selectedEvent={selectedEvent}
+              searchQuery={eventSearch}
+              onSearch={handleEventSearch}
+              decisionFilter={eventDecision}
+              onDecisionFilter={handleEventDecisionFilter}
+            />
+          </section>
+        </main>
+
+        {showNewEval && (
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in"
+            onClick={() => setShowNewEval(false)}
+          >
+            <motion.div
+              layoutId="eval-modal"
+              className="border border-primary/30 bg-black/95 p-10 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl relative rounded-sm"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button onClick={() => setShowNewEval(false)} className="absolute top-8 right-8 p-2 text-primary opacity-40 hover:opacity-100 transition-opacity">
+                <Menu className="w-5 h-5 rotate-45" />
+              </button>
+              <CustomLoginForm onEvaluate={handleEvaluate} backendOnline={backendOnline} embedded />
+            </motion.div>
+          </div>
+        )}
+
+        <footer className="relative z-20 backdrop-blur-md bg-black border-t border-primary/10 py-12 mt-20 transition-all duration-300">
+          <div className="max-w-[1600px] mx-auto px-4 sm:px-6 flex flex-col items-center gap-6">
+            <div className="flex items-center gap-6 text-[9px] font-black tracking-[0.5em] text-primary/30 uppercase font-mono">
+              <span>Isolation_Forest_v4</span>
+              <div className="w-1 h-1 bg-primary/20" />
+              <span>13_Identity_Vectors</span>
+              <div className="w-1 h-1 bg-primary/20" />
+              <span>Edge_Adaptive_Core</span>
+            </div>
+            <div className="text-[9px] font-black text-primary/20 tracking-[0.2em] uppercase font-mono">
+              PULSEGUARD_AI © 2026 // SECURE_UPLINK_DASHBOARD
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );
